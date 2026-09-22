@@ -1,0 +1,23 @@
+name: Dataset Research
+description: Dataset discovery, audit, construction, or licensing research
+title: "[DATA-XXX] "
+labels: []
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Required Dataset Properties
+  - type: textarea
+    id: license
+    attributes:
+      label: License / Privacy / Commercial Constraints
+  - type: textarea
+    id: exit
+    attributes:
+      label: Exit Criteria

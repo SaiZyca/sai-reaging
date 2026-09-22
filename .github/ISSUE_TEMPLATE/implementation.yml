@@ -1,0 +1,25 @@
+name: Implementation
+description: Reproduction, integration, instrumentation, or reusable engineering task
+title: "[IMPL-XXX] "
+labels: []
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Research / Experiment Dependencies
+  - type: textarea
+    id: deliverable
+    attributes:
+      label: Deliverable
+    validations:
+      required: true
+  - type: textarea
+    id: reproducibility
+    attributes:
+      label: Reproducibility Requirements

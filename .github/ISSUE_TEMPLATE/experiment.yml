@@ -1,0 +1,71 @@
+name: Experiment
+description: Formal empirical Re-Aging experiment
+title: "[EXP-XXX] "
+body:
+  - type: input
+    id: source
+    attributes:
+      label: Source Research
+      description: Deep Analysis / Architecture / Dataset / Module research artifact that motivates this experiment.
+    validations:
+      required: true
+  - type: textarea
+    id: finding
+    attributes:
+      label: Research Finding
+      description: What is already supported before running this experiment?
+    validations:
+      required: true
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+      description: What remains empirically uncertain?
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: What decision must this experiment enable?
+    validations:
+      required: true
+  - type: textarea
+    id: independent
+    attributes:
+      label: Independent Variables
+    validations:
+      required: true
+  - type: textarea
+    id: dependent
+    attributes:
+      label: Dependent Variables / Metrics
+    validations:
+      required: true
+  - type: textarea
+    id: controls
+    attributes:
+      label: Controlled Variables
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Inputs / Dataset
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation Requirement
+      description: None / Instrumentation / Architecture Modification / Retraining.
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Decision Criteria
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Known Risks / Confounders
+    validations:
+      required: true

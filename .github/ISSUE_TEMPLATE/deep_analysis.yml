@@ -1,0 +1,51 @@
+name: Deep Analysis
+description: Formal Paper / Model / Repository deep analysis
+title: "[DA-XXX] "
+body:
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Research Objective
+    validations:
+      required: true
+  - type: textarea
+    id: questions
+    attributes:
+      label: Research Questions
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Research Map Scope
+      description: Relevant Research Map section(s) or candidate technology.
+    validations:
+      required: true
+  - type: textarea
+    id: role
+    attributes:
+      label: Expected Re-Aging Role
+      description: Potential module / strategy / benchmark role before deep analysis.
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision Question
+      description: What project decision should this analysis make easier?
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Primary Sources
+  - type: textarea
+    id: exit
+    attributes:
+      label: Exit Criteria
+    validations:
+      required: true

@@ -1,0 +1,7 @@
+id: DA-004
+topic: "PuLID"
+source_chat: "Deep Analysis 04 — PuLID"
+artifact_state: "migration-placeholder"
+report_migrated: false
+related_experiments:
+  - EXP-001
