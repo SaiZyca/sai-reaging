@@ -1,5 +1,6 @@
 id: DA-002
 topic: "TimeMachine"
-status: "COMPLETED → ARCHITECTURE CANDIDATE"
-potential_role: "Age Conditioning / Population-Level Age Representation"
+source_chat: "Deep Analysis 02 — TimeMachine"
+artifact_state: "migration-placeholder"
 report_migrated: false
+related_experiments: []
