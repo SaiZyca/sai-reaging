@@ -80,14 +80,33 @@ evaluation:
     target_age_accuracy: null
     realized_age_displacement: null
     identity_age_pareto: null
-    failure_taxonomy: null
+    failure_taxonomy:
+      - identity_drift
+      - weak_age_transformation
+      - texture_only_aging
+      - soft_tissue_shape_aging_suppression
+      - face_shape_drift
+      - expression_loss
+      - hair_age_leakage
   identity_evaluators: []
   age_evaluators: []
   metric_implementation: null
   evaluator_independence_notes: null
 
-decision_criteria: null
-known_confounders: []
+decision_criteria:
+  useful_identity_age_pareto_region: >
+    Promote PuLID as a stronger Architecture Candidate for Stage A.
+  identity_improves_but_age_transformation_collapses: >
+    Investigate Age-Aware Identity Conditioning / selective relaxation of
+    age-bearing visual identity.
+  no_useful_balance_under_stock_controls: >
+    Downgrade stock PuLID to an Architecture Reference for this role.
+
+known_confounders:
+  - "Identity evaluator alignment bias with the conditioning representation."
+  - "Age evaluator alignment bias or source-age estimation error."
+  - "Prompt, backbone, sampler/solver, or preprocessing interactions that may masquerade as a PuLID effect."
+  - "Seed sensitivity and input-image quality."
 
 execution:
   hardware: null
