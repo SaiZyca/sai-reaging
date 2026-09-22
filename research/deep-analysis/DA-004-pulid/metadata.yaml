@@ -1,0 +1,6 @@
+id: DA-004
+topic: "PuLID"
+status: "COMPLETED → ARCHITECTURE / EXPERIMENT CANDIDATE"
+potential_role: "Identity Conditioning / DiT Identity Adapter"
+report_migrated: false
+next_experiment: EXP-001
