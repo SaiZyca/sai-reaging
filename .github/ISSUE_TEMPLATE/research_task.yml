@@ -1,0 +1,50 @@
+name: General Research Task
+description: Landscape, Module, Architecture, Evaluation, Infrastructure, or other formal research work
+title: "[Research Task] "
+body:
+  - type: dropdown
+    id: research_type
+    attributes:
+      label: Research Type
+      options:
+        - Landscape
+        - Module Research
+        - Architecture
+        - Evaluation
+        - Infrastructure
+        - Other Research
+    validations:
+      required: true
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Research Map Scope
+      description: Relevant Research Map section(s), candidate(s), or architecture area.
+  - type: textarea
+    id: questions
+    attributes:
+      label: Research Questions / Work Items
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Required Evidence / Inputs
+  - type: textarea
+    id: exit
+    attributes:
+      label: Exit Criteria
+    validations:
+      required: true
