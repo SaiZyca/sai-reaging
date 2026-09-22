@@ -1,0 +1,35 @@
+name: Deep Analysis
+description: Formal Paper / Model / Repository deep analysis
+title: "[DA-XXX] "
+labels: []
+body:
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Research Objective
+    validations:
+      required: true
+  - type: textarea
+    id: questions
+    attributes:
+      label: Research Questions
+    validations:
+      required: true
+  - type: textarea
+    id: role
+    attributes:
+      label: Expected Re-Aging Role
+  - type: textarea
+    id: sources
+    attributes:
+      label: Primary Sources
+  - type: textarea
+    id: exit
+    attributes:
+      label: Exit Criteria
