@@ -1,27 +1,25 @@
 # Sai Re-Aging
 
-A long-running research program for building a controllable, identity-preserving, temporally consistent, geometry-aware Re-Aging AI system.
+A long-running research program for building a controllable, identity-preserving,
+temporally consistent, geometry-aware Re-Aging AI system.
 
 ## Canonical research state
-- [Re-Aging_Research_Map.md](./Re-Aging_Research_Map.md) — durable technical state
-- [Re-Aging_Research_Workflow.md](./Re-Aging_Research_Workflow.md) — research operating model
 
-## Current program state
-- Landscape Round 1 — completed
-- DA-001 — MyTimeMachine — completed
-- DA-002 — TimeMachine — completed
-- DA-003 — Aging Multiverse — completed
-- DA-004 — PuLID — completed
-- EXP-001 — PuLID Re-Aging Stress Test — DESIGNED
-- Next experiment state — IMPLEMENTATION-READY
+- [Re-Aging_Research_Map.md](./Re-Aging_Research_Map.md) — canonical high-level technical state
+- [Re-Aging_Research_Workflow.md](./Re-Aging_Research_Workflow.md) — canonical research operating model
+
+The README is an entry point, not a second Research Map. Current candidate
+status, architecture direction, open problems, and research priorities should be
+read from `Re-Aging_Research_Map.md`.
 
 ## Research operating model
+
 ```text
 ChatGPT Research Chat
         ↓
 GitHub Issue
         ↓
-Research / Experiment Branch
+Git Task Branch
         ↓
 Evidence + Code + Config + Results
         ↓
@@ -29,12 +27,14 @@ Pull Request / Closeout
         ↓
 main
         ↓
-Canonical Research State
+Canonical Repository State
 ```
 
-`main` represents the current auditable research state, not automatically a production-ready software release.
+`main` represents the current auditable repository state. It is not automatically
+a production-ready software release.
 
 ## Repository roles
+
 ```text
 research/       Durable research artifacts and architecture decisions
 experiments/    Reproducible experiment bundles
@@ -48,5 +48,13 @@ data/           Manifests and policy; not raw datasets by default
 assets/         Canonical diagrams and selected figures
 ```
 
+Git does not preserve empty directories. Planned paths such as `src/`,
+`configs/`, `scripts/`, `tests/`, or `assets/` are introduced when the
+first real artifact requires them rather than being filled with placeholder
+files.
+
 ## Licensing
-Project-owned repository content is licensed under Apache-2.0 unless explicitly stated otherwise. Third-party code, models, weights, datasets, figures, and other assets retain their upstream licenses and terms.
+
+Project-owned repository content is licensed under Apache-2.0 unless explicitly
+stated otherwise. Third-party code, models, weights, datasets, figures, and other
+assets retain their upstream licenses and terms.
