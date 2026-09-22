@@ -1,0 +1,45 @@
+id: EXP-001
+name: "PuLID Re-Aging Stress Test"
+source_research:
+  - DA-004
+state: DESIGNED
+
+hypotheses:
+  H1: "Increasing identity conditioning strength may improve identity similarity while suppressing realized age transformation."
+  H2: "Earlier or stronger identity injection may improve identity preservation while reducing age editability."
+  H3: "Rich visual identity features may carry more source-age appearance than biometric identity features."
+
+phase_a:
+  inference_only: true
+  retraining: false
+  architecture_modification: false
+
+independent_variables:
+  age_gap: null
+  identity_strength: null
+  identity_insertion_start: null
+  seeds: null
+
+metrics:
+  identity_preservation: null
+  target_age_accuracy: null
+  realized_age_displacement: null
+  pareto_analysis: null
+  failure_taxonomy: null
+
+implementation:
+  repository: null
+  commit: null
+  checkpoint: null
+  environment: null
+  exact_commands: null
+
+dataset:
+  manifest: null
+
+evaluation:
+  identity_evaluators: null
+  age_evaluators: null
+
+hardware: null
+executed_at: null
