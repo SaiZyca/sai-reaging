@@ -1,45 +1,106 @@
+schema_version: "0.1"
+
 id: EXP-001
 name: "PuLID Re-Aging Stress Test"
-source_research:
-  - DA-004
 state: DESIGNED
 
+source_research:
+  artifacts:
+    - DA-004
+  source_chat: "Deep Analysis 04 — PuLID"
+  source_issue: null
+
+research_finding: >
+  PuLID is a strong identity-conditioning architecture candidate for Stage A,
+  but Re-Aging-specific evidence is still required to determine whether strong
+  identity conditioning suppresses legitimate age transformation.
+
+objective: >
+  Measure the Identity–Age trade-off of stock PuLID under progressively larger
+  Re-Aging transformations and determine whether it should be promoted,
+  modified with Age-Aware Identity Conditioning, or downgraded to an
+  architecture reference.
+
 hypotheses:
-  H1: "Increasing identity conditioning strength may improve identity similarity while suppressing realized age transformation."
-  H2: "Earlier or stronger identity injection may improve identity preservation while reducing age editability."
-  H3: "Rich visual identity features may carry more source-age appearance than biometric identity features."
+  H1: >
+    Increasing identity conditioning strength may improve identity similarity
+    while suppressing realized age transformation.
+  H2: >
+    Earlier or stronger identity injection may improve identity preservation
+    while reducing age editability.
+  H3: >
+    Rich visual identity features may carry more source-age appearance than
+    biometric identity features.
 
 phase_a:
   inference_only: true
   retraining: false
   architecture_modification: false
 
-independent_variables:
-  age_gap: null
-  identity_strength: null
-  identity_insertion_start: null
-  seeds: null
+variables:
+  independent:
+    age_gap: null
+    identity_strength: null
+    identity_insertion_start: null
+    seeds: null
+  controlled:
+    backbone: null
+    sampler_or_solver: null
+    inference_steps: null
+    image_resolution: null
+    prompt_template: null
+    preprocessing: null
 
-metrics:
-  identity_preservation: null
-  target_age_accuracy: null
-  realized_age_displacement: null
-  pareto_analysis: null
-  failure_taxonomy: null
+inputs:
+  dataset_manifest: null
+  preprocessing_version: null
+  prompt_or_conditioning_manifest: null
 
 implementation:
-  repository: null
-  commit: null
-  checkpoint: null
-  environment: null
+  upstream_repository: null
+  upstream_commit: null
+  project_commit: null
+  checkpoint:
+    identifier: null
+    source: null
+    checksum: null
+    license: null
+  environment:
+    os: null
+    python: null
+    framework: null
+    framework_version: null
+    cuda_or_accelerator: null
+    dependencies_lock: null
   exact_commands: null
 
-dataset:
-  manifest: null
-
 evaluation:
-  identity_evaluators: null
-  age_evaluators: null
+  metrics:
+    identity_preservation: null
+    target_age_accuracy: null
+    realized_age_displacement: null
+    identity_age_pareto: null
+    failure_taxonomy: null
+  identity_evaluators: []
+  age_evaluators: []
+  metric_implementation: null
+  evaluator_independence_notes: null
 
-hardware: null
-executed_at: null
+decision_criteria: null
+known_confounders: []
+
+execution:
+  hardware: null
+  executed_at: null
+
+artifacts:
+  raw_outputs:
+    location: null
+    manifest: null
+  aggregated_results: null
+  failure_annotations: null
+  selected_examples: null
+
+notes: >
+  Null fields are intentionally unresolved at DESIGNED state. They must be
+  fixed as required before promotion to IMPLEMENTATION-READY / EXECUTABLE.
