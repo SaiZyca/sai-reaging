@@ -1,0 +1,53 @@
+name: Experiment
+description: Formal empirical Re-Aging experiment
+title: "[EXP-XXX] "
+labels: []
+body:
+  - type: input
+    id: source
+    attributes:
+      label: Source Research
+    validations:
+      required: true
+  - type: textarea
+    id: finding
+    attributes:
+      label: Research Finding
+    validations:
+      required: true
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+    validations:
+      required: true
+  - type: textarea
+    id: variables
+    attributes:
+      label: Variables / Controls / Metrics
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Inputs / Dataset
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation Requirement
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Decision Criteria
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Known Risks / Confounders
