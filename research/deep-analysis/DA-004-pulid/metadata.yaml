@@ -1,6 +1,7 @@
 id: DA-004
 topic: "PuLID"
-status: "COMPLETED → ARCHITECTURE / EXPERIMENT CANDIDATE"
-potential_role: "Identity Conditioning / DiT Identity Adapter"
+source_chat: "Deep Analysis 04 — PuLID"
+artifact_state: "migration-placeholder"
 report_migrated: false
-next_experiment: EXP-001
+related_experiments:
+  - EXP-001
