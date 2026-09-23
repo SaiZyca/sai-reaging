@@ -222,7 +222,7 @@ implementation:
       - path: "experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml"
         role: canonical_generation_sweep
     pending_materialization:
-      - "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv"
+      - "data/private/EXP-001/dataset_manifest.csv"
       - "stage-specific resolved environment locks"
       - "local model assets / hashes"
       - "smoke-test outputs"
@@ -349,8 +349,15 @@ inputs:
 
   dataset_manifest:
     template: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.template.csv"
-    materialized_path: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv"
+    private_materialized_path: "data/private/EXP-001/dataset_manifest.csv"
+    repository_lock_template: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.template.yaml"
+    repository_lock_path: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.yaml"
     materialized_status: pending_implementation
+    redistribution_policy: >
+      Do not commit the materialized AgeDB manifest because it contains dataset
+      annotations covered by AgeDB's no-redistribution terms. Commit only the
+      license-safe lock record containing aggregate selection metadata and the
+      SHA256 of the private manifest.
     required_columns:
       - sample_id
       - subject_id
@@ -537,7 +544,7 @@ execution:
     generation: >
       python experiments/EXP-001-pulid-reaging-stress-test/scripts/run_phase_a.py
       --config experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml
-      --manifest experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv
+      --manifest data/private/EXP-001/dataset_manifest.csv
       --dataset-root <AGEDB_ROOT>
       --pulid-repo third_party/PuLID
       --pulid-checkpoint <PULID_V0_9_1_CHECKPOINT>
@@ -548,7 +555,7 @@ execution:
       python experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate_identity_adaface.py
       --adaface-repo third_party/AdaFace
       --checkpoint <ADAFACE_WEBFACE12M_CHECKPOINT>
-      --manifest experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv
+      --manifest data/private/EXP-001/dataset_manifest.csv
       --dataset-root <AGEDB_ROOT>
       --raw-manifest experiments/EXP-001-pulid-reaging-stress-test/outputs/raw_manifest.jsonl
       --raw-dir experiments/EXP-001-pulid-reaging-stress-test/outputs/raw
@@ -558,7 +565,7 @@ execution:
       --mivolo-repo third_party/MiVOLO
       --checkpoint <MIVOLO_FACE_ONLY_CHECKPOINT>
       --detector-weights <MIVOLO_DETECTOR_CHECKPOINT>
-      --manifest experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv
+      --manifest data/private/EXP-001/dataset_manifest.csv
       --dataset-root <AGEDB_ROOT>
       --raw-manifest experiments/EXP-001-pulid-reaging-stress-test/outputs/raw_manifest.jsonl
       --raw-dir experiments/EXP-001-pulid-reaging-stress-test/outputs/raw
@@ -593,7 +600,7 @@ artifacts:
 
 implementation_handoff:
   remaining_to_reach_executable:
-    - "Acquire AgeDB under acceptable research terms and materialize the 8-row manifest."
+    - "Acquire AgeDB under its non-commercial research terms, materialize the private 8-row manifest, and commit only its license-safe lock/hash record."
     - "Download/pin all model assets, including FLUX/AE, text-encoder snapshot revisions, and the MiVOLO detector; record local SHA256 values and access/license metadata."
     - "Create the four isolated execution environments and commit resolved stage-specific locks."
     - "Run manifest validation and a 1-source generation/evaluation smoke test."
