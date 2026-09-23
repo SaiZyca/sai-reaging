@@ -87,11 +87,14 @@ def main() -> None:
     required_markers = [
         "ba0c3e10f4548361eb9a63265d87ce1140ab5a05",
         "if pretrain_path is None:",
+        "EXP001_FACEXLIB_WEIGHTS",
+        "EXP001_EVA_CLIP_PATH",
+        "EXP001_ANTELOPE_ROOT",
     ]
     if not all(marker in pipeline_text for marker in required_markers):
         raise RuntimeError(
             "PuLID reproducibility patch is not applied. "
-            "Run scripts/bootstrap_third_party.sh before generation."
+            "Run scripts/bootstrap_third_party.ps1 before generation."
         )
     expected_pulid_sha = experiment["implementation"]["model_assets"]["pulid"]["sha256"]
     args.pulid_checkpoint = args.pulid_checkpoint.resolve()
