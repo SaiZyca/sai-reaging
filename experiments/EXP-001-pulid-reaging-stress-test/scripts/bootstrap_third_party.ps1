@@ -73,7 +73,7 @@ function Apply-PuLIDReproducibilityInstrumentation {
     if (-not $Text.StartsWith("import gc`n")) {
         throw "PuLID instrumentation anchor missing: import gc"
     }
-    $Text = $Text.Replace("import gc`n", "import gc`nimport os`n", 1)
+    $Text = $Text.Replace("import gc`n", "import gc`nimport os`n")
 
     $OldAntelope = @(
         "        snapshot_download('DIAMONIK7777/antelopev2', local_dir='models/antelopev2')"
