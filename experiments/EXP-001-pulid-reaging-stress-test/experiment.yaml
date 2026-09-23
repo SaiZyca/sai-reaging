@@ -198,6 +198,7 @@ implementation:
     windows_setup:
       bootstrap_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/bootstrap_third_party.ps1"
       environment_setup_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/setup_windows_envs.ps1"
+      environment_verification_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/verify_windows_envs.ps1"
       environment_capture_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/capture_windows_environment.ps1"
       pytorch_generation_age: "torch 2.0.1 / torchvision 0.15.2 / CUDA 11.8 wheel"
       pytorch_identity: "torch 1.13.1 / torchvision 0.14.1 / CUDA 11.7 wheel"
