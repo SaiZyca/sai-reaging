@@ -15,7 +15,7 @@ index 706514c..0000000 100644
          providers = ['CPUExecutionProvider'] if onnx_provider == 'cpu' \
              else ['CUDAExecutionProvider', 'CPUExecutionProvider']
          self.app = FaceAnalysis(name='antelopev2', root='.', providers=providers)
-@@ -83,10 +87,11 @@ class PuLIDPipeline(nn.Module):
+@@ -83,9 +87,11 @@ class PuLIDPipeline(nn.Module):
          self.pulid_encoder = self.pulid_encoder.to(device)
  
      def load_pretrain(self, pretrain_path=None, version='v0.9.0'):
