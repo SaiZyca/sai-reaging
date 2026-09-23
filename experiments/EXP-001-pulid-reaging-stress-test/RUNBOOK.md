@@ -38,8 +38,12 @@ third_party\MiVOLO
 ```
 
 The PowerShell bootstrap checks out the exact revisions in
-`repositories.lock.yaml` and applies only the recorded PuLID reproducibility
-patch. These local working copies are ignored by Git.
+`repositories.lock.yaml` and applies only the two recorded PuLID
+reproducibility edits. On Windows these edits are applied through exact,
+marker-verified text replacement rather than `git apply`, avoiding
+line-ending / patch-parser differences. The committed patch file remains the
+audit diff for the same semantic change. These local working copies are
+ignored by Git.
 
 If a previous interrupted bootstrap left modified third-party files, run:
 

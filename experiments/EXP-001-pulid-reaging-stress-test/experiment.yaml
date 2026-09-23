@@ -85,10 +85,15 @@ implementation:
   upstream_instrumentation_patch:
     path: "experiments/EXP-001-pulid-reaging-stress-test/patches/pulid_reproducibility.patch"
     purpose: >
-      Pin AntelopeV2 to the recorded revision and prevent an unnecessary
-      automatic PuLID checkpoint download when an explicitly hashed local
-      checkpoint is supplied. The patch does not alter model math or identity
-      injection behavior.
+      Audit diff documenting the two reproducibility-only PuLID edits: pin
+      AntelopeV2 to the recorded revision and prevent an unnecessary automatic
+      PuLID checkpoint download when an explicitly hashed local checkpoint is
+      supplied. The edits do not alter model math or identity injection behavior.
+    windows_application: >
+      bootstrap_third_party.ps1 applies the same two edits through exact,
+      marker-verified text replacement rather than git apply. This avoids
+      platform-specific unified-diff / line-ending failure while preserving the
+      same auditable semantic change.
   project_commit:
     value: null
     required_at: EXECUTABLE
