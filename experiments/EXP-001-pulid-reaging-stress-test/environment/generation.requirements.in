@@ -1,9 +1,15 @@
-# EXP-001 generation environment
-# Derived from ToTheBeginning/PuLID@a66a6a1 requirements.txt.
+# EXP-001 generation environment — Windows primary target
+# Derived from ToTheBeginning/PuLID@a66a6a1 requirements.txt with
+# reproducibility/Windows compatibility pins.
+#
+# torch/torchvision are installed separately by setup_windows_envs.ps1
+# from the official CUDA 11.8 wheel index.
 torch==2.0.1
 torchvision==0.15.2
+numpy<2
 diffusers==0.25.0
 transformers==4.43.3
+huggingface_hub==0.25.2
 gradio>=4.0.0
 opencv-python
 httpx==0.23.3
@@ -11,9 +17,8 @@ timm
 einops
 ftfy
 facexlib
-insightface
-onnxruntime
-onnxruntime-gpu
+insightface==0.7.3
+onnxruntime-gpu==1.18.1
 accelerate
 SentencePiece
 safetensors

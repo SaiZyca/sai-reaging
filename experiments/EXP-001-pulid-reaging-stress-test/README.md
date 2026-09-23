@@ -138,12 +138,13 @@ The repository now contains the Phase A implementation surface:
 - `scripts/bootstrap_third_party.sh` — exact third-party repository revisions
 
 The implementation deliberately uses **isolated environments** for generation,
-identity evaluation, age evaluation, and final aggregation. PuLID requires
+identity evaluation, age evaluation, and final aggregation. The primary
+execution platform is **Windows 10/11 x64 + PowerShell + Python 3.10**. PuLID requires
 PyTorch 2.0.1 while the official AdaFace repository constrains PyTorch to
 <=1.13.1; forcing them into one environment would make the generation baseline
 less reproducible.
 
-See `environment/README.md` for the environment contract.
+See `environment/README.md` and `RUNBOOK.md` for the Windows execution contract.
 
 ## IMPLEMENTATION-READY does not mean EXECUTABLE
 

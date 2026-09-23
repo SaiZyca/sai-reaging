@@ -2,6 +2,8 @@
 
 EXP-001 uses **isolated environments** rather than one monolithic environment.
 
+The primary execution platform for this experiment is **Windows 10/11 x64 with PowerShell and Python 3.10**.
+
 This is intentional:
 
 - PuLID pins PyTorch 2.0.1.
@@ -105,3 +107,29 @@ Run:
 This clones the exact revisions recorded in repositories.lock.yaml into
 third_party/. The cloned repositories are local execution dependencies and
 must not be committed into the sai-reaging repository.
+
+
+## Windows setup
+
+From the repository root in PowerShell:
+
+    Set-ExecutionPolicy -Scope Process Bypass
+    .\experiments\EXP-001-pulid-reaging-stress-test\scripts\bootstrap_third_party.ps1
+    .\experiments\EXP-001-pulid-reaging-stress-test\scripts\setup_windows_envs.ps1
+
+The setup script creates:
+
+    .venv-exp001-generation
+    .venv-exp001-identity
+    .venv-exp001-age
+    .venv-exp001-analysis
+
+The Windows setup intentionally uses historical PyTorch CUDA wheels compatible
+with the pinned evaluator/generation stacks:
+
+- generation / age: PyTorch 2.0.1 + torchvision 0.15.2 + cu118
+- identity: PyTorch 1.13.1 + torchvision 0.14.1 + cu117
+
+Before promotion to EXECUTABLE, capture the observed Windows environment:
+
+    .\experiments\EXP-001-pulid-reaging-stress-test\scripts\capture_windows_environment.ps1
