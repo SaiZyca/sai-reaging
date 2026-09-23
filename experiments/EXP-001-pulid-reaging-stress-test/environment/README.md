@@ -6,8 +6,11 @@ The primary execution platform for this experiment is **Windows 10/11 x64 with P
 
 This is intentional:
 
-- PuLID pins PyTorch 2.0.1.
-- AdaFace's official requirements constrain PyTorch to <=1.13.1.
+- PuLID was developed against an older PyTorch stack.
+- AdaFace's historical official requirements constrain PyTorch to <=1.13.1.
+- The observed execution GPU is an RTX 5080 / Blackwell sm_120 device.
+- PyTorch builds older than the Blackwell-support generation cannot execute CUDA kernels on sm_120.
+- The Windows GPU stages therefore use PyTorch 2.7.1 + torchvision 0.22.1 + CUDA 12.8 wheels.
 - MiVOLO brings its own timm / ultralytics dependency set.
 - Metric aggregation does not need CUDA or model dependencies.
 
@@ -124,11 +127,15 @@ The setup script creates:
     .venv-exp001-age
     .venv-exp001-analysis
 
-The Windows setup intentionally uses historical PyTorch CUDA wheels compatible
-with the pinned evaluator/generation stacks:
+The Windows setup uses the earliest stable Blackwell-capable PyTorch patch
+release selected for this experiment:
 
-- generation / age: PyTorch 2.0.1 + torchvision 0.15.2 + cu118
-- identity: PyTorch 1.13.1 + torchvision 0.14.1 + cu117
+- generation: PyTorch 2.7.1 + torchvision 0.22.1 + cu128
+- identity: PyTorch 2.7.1 + torchvision 0.22.1 + cu128
+- age: PyTorch 2.7.1 + torchvision 0.22.1 + cu128
+
+This is a hardware-driven runtime adaptation. PuLID / AdaFace / MiVOLO model
+architectures and checkpoints remain unchanged.
 
 Before promotion to EXECUTABLE, capture the observed Windows environment:
 
