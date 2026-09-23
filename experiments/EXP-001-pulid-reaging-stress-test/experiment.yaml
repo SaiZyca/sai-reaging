@@ -174,7 +174,8 @@ implementation:
       generation:
         requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/generation.requirements.in"
         resolved_lock:
-          value: null
+          value: "experiments/EXP-001-pulid-reaging-stress-test/environment/generation.lock.txt"
+          materialized_at_commit: "b9905a6fb7ea0151b4655cacf91542463437708d"
           required_at: EXECUTABLE
           target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/generation.lock.txt"
         framework: "PyTorch 2.7.1+cu128 / torchvision 0.22.1+cu128"
@@ -183,21 +184,24 @@ implementation:
       identity_evaluation:
         requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/identity.requirements.in"
         resolved_lock:
-          value: null
+          value: "experiments/EXP-001-pulid-reaging-stress-test/environment/identity.lock.txt"
+          materialized_at_commit: "b9905a6fb7ea0151b4655cacf91542463437708d"
           required_at: EXECUTABLE
           target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/identity.lock.txt"
         framework: "PyTorch 2.7.1+cu128 / torchvision 0.22.1+cu128"
       age_evaluation:
         requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/age.requirements.in"
         resolved_lock:
-          value: null
+          value: "experiments/EXP-001-pulid-reaging-stress-test/environment/age.lock.txt"
+          materialized_at_commit: "b9905a6fb7ea0151b4655cacf91542463437708d"
           required_at: EXECUTABLE
           target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/age.lock.txt"
         framework: "PyTorch 2.7.1+cu128 / torchvision 0.22.1+cu128"
       analysis:
         requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/analysis.requirements.in"
         resolved_lock:
-          value: null
+          value: "experiments/EXP-001-pulid-reaging-stress-test/environment/analysis.lock.txt"
+          materialized_at_commit: "b9905a6fb7ea0151b4655cacf91542463437708d"
           required_at: EXECUTABLE
           target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/analysis.lock.txt"
         accelerator: "CPU sufficient"
@@ -217,6 +221,26 @@ implementation:
         - "Python version"
         - "PyTorch / CUDA version where applicable"
         - "nvidia-smi / observed hardware"
+    environment_evidence:
+      status: materialized
+      materialized_at: "2026-09-23"
+      source_commit: "b9905a6fb7ea0151b4655cacf91542463437708d"
+      source_actor: "SaiZyca"
+      snapshot: "experiments/EXP-001-pulid-reaging-stress-test/environment/environment_snapshot.yaml"
+      raw_observed_capture_committed: false
+      verification:
+        windows_environment_verification_passed: true
+        blackwell_sm120_execution_verified: true
+        pip_check_all_stages: passed
+        local_path_scan_of_locks: passed
+      observed_hardware:
+        gpu: "NVIDIA GeForce RTX 5080"
+        driver_version: "616.92"
+        memory_total_mib: 16303
+        compute_capability: "12.0"
+      observed_runtime:
+        torch: "2.7.1+cu128"
+        cuda_runtime: "12.8"
     reason_for_bf16: >
       Official PuLID-FLUX documentation reports facial-detail degradation under
       fp8. Because this experiment measures identity and aging detail, fp8 is
@@ -255,7 +279,6 @@ implementation:
         role: canonical_generation_sweep
     pending_materialization:
       - "data/private/EXP-001/dataset_manifest.csv"
-      - "stage-specific resolved environment locks"
       - "local model assets / hashes"
       - "smoke-test outputs"
 
@@ -634,7 +657,7 @@ implementation_handoff:
   remaining_to_reach_executable:
     - "Acquire AgeDB under its non-commercial research terms, materialize the private 8-row manifest, and commit only its license-safe lock/hash record."
     - "Download/pin all model assets, including FLUX/AE, text-encoder snapshot revisions, and the MiVOLO detector; record local SHA256 values and access/license metadata."
-    - "Create the four isolated execution environments and commit resolved stage-specific locks."
+    - "Environment gate complete: four isolated Windows environments verified and resolved locks committed."
     - "Run manifest validation and a 1-source generation/evaluation smoke test."
     - "Verify output naming, raw manifest, deterministic seeds, evaluator success, and paired metric aggregation."
     - "Record exact sai-reaging project commit and observed hardware."
@@ -653,7 +676,7 @@ readiness:
   decision_rules_fixed: true
   implementation_plan_fixed: true
   code_present: true
-  environment_materialized: false
+  environment_materialized: true
   checkpoints_materialized: false
   dataset_materialized: false
   smoke_test_passed: false
