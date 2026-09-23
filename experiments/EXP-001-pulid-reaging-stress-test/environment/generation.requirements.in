@@ -1,0 +1,22 @@
+# EXP-001 generation environment
+# Derived from ToTheBeginning/PuLID@a66a6a1 requirements.txt.
+torch==2.0.1
+torchvision==0.15.2
+diffusers==0.25.0
+transformers==4.43.3
+gradio>=4.0.0
+opencv-python
+httpx==0.23.3
+timm
+einops
+ftfy
+facexlib
+insightface
+onnxruntime
+onnxruntime-gpu
+accelerate
+SentencePiece
+safetensors
+torchsde
+PyYAML
+Pillow
