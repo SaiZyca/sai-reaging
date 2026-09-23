@@ -52,12 +52,16 @@ import yaml
 import flux.util
 from pulid.pipeline_flux import PuLIDPipeline
 assert torch.cuda.is_available(), 'CUDA is not available in generation environment'
-x = torch.zeros(1, device='cuda')
+arch_list = torch.cuda.get_arch_list()
+assert 'sm_120' in arch_list or 'compute_120' in arch_list, f'Blackwell sm_120 missing from PyTorch build: {arch_list}'
+x = torch.ones(1, device='cuda')
+torch.cuda.synchronize()
 print('python=ok')
 print('torch=', torch.__version__)
 print('torchvision=', torchvision.__version__)
 print('cuda_runtime=', torch.version.cuda)
 print('gpu=', torch.cuda.get_device_name(0))
+print('arch_list=', arch_list)
 print('onnxruntime_providers=', onnxruntime.get_available_providers())
 print('pulid_import=ok')
 "@
@@ -74,13 +78,17 @@ import yaml
 import net
 from face_alignment import mtcnn
 assert torch.cuda.is_available(), 'CUDA is not available in identity environment'
-x = torch.zeros(1, device='cuda')
+arch_list = torch.cuda.get_arch_list()
+assert 'sm_120' in arch_list or 'compute_120' in arch_list, f'Blackwell sm_120 missing from PyTorch build: {arch_list}'
+x = torch.ones(1, device='cuda')
+torch.cuda.synchronize()
 m = net.build_model('ir_101')
 del m
 print('python=ok')
 print('torch=', torch.__version__)
 print('cuda_runtime=', torch.version.cuda)
 print('gpu=', torch.cuda.get_device_name(0))
+print('arch_list=', arch_list)
 print('adaface_import=ok')
 "@
 
@@ -96,11 +104,15 @@ import ultralytics
 import yaml
 from mivolo.predictor import Predictor
 assert torch.cuda.is_available(), 'CUDA is not available in age environment'
-x = torch.zeros(1, device='cuda')
+arch_list = torch.cuda.get_arch_list()
+assert 'sm_120' in arch_list or 'compute_120' in arch_list, f'Blackwell sm_120 missing from PyTorch build: {arch_list}'
+x = torch.ones(1, device='cuda')
+torch.cuda.synchronize()
 print('python=ok')
 print('torch=', torch.__version__)
 print('cuda_runtime=', torch.version.cuda)
 print('gpu=', torch.cuda.get_device_name(0))
+print('arch_list=', arch_list)
 print('timm=', timm.__version__)
 print('ultralytics=', ultralytics.__version__)
 print('mivolo_import=ok')
