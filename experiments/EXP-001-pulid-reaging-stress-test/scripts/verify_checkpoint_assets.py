@@ -106,6 +106,10 @@ def main() -> None:
         aux / "facexlib" / "parsing_bisenet.pth",
         "FaceXLib BiSeNet",
     )
+    face_parsenet = require_file(
+        aux / "facexlib" / "parsing_parsenet.pth",
+        "FaceXLib ParseNet",
+    )
 
     adaface = require_file(
         evaluators / "adaface_ir101_webface12m.ckpt",
@@ -173,6 +177,7 @@ def main() -> None:
             },
             "facexlib_retinaface": face_det,
             "facexlib_bisenet": face_parse,
+            "facexlib_parsenet": face_parsenet,
         },
         "evaluators": {
             "adaface_r100_webface12m": adaface,
