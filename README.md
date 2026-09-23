@@ -7,6 +7,7 @@ temporally consistent, geometry-aware Re-Aging AI system.
 
 - [Re-Aging_Research_Map.md](./Re-Aging_Research_Map.md) — canonical high-level technical state
 - [Re-Aging_Research_Workflow.md](./Re-Aging_Research_Workflow.md) — canonical research operating model
+- [governance/Project_Instructions.md](./governance/Project_Instructions.md) — canonical persisted AI research contract
 
 The README is an entry point, not a second Research Map. Current candidate
 status, architecture direction, open problems, and research priorities should be
@@ -36,6 +37,7 @@ a production-ready software release.
 ## Repository roles
 
 ```text
+governance/     Versioned AI research contract / project governance
 research/       Durable research artifacts and architecture decisions
 experiments/    Reproducible experiment bundles
 src/            Reusable project-owned implementation
