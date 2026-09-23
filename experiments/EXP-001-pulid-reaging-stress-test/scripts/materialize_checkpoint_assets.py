@@ -31,6 +31,10 @@ FACEXLIB_FILES = {
         "https://github.com/xinntao/facexlib/releases/download/v0.2.0/"
         "parsing_bisenet.pth"
     ),
+    "parsing_parsenet.pth": (
+        "https://github.com/xinntao/facexlib/releases/download/v0.2.2/"
+        "parsing_parsenet.pth"
+    ),
 }
 
 MANUAL_ASSETS = {
