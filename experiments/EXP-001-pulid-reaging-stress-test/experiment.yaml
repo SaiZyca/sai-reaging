@@ -1,8 +1,20 @@
-schema_version: "0.1"
+schema_version: "0.2"
 
 id: EXP-001
 name: "PuLID Re-Aging Stress Test"
-state: DESIGNED
+state: IMPLEMENTATION-READY
+
+state_transition:
+  from: DESIGNED
+  to: IMPLEMENTATION-READY
+  date: "2026-09-23"
+  rationale: >
+    Phase A repository/model assumptions, sweep, controls, dataset contract,
+    evaluation protocol, analysis rules, decision thresholds, and implementation
+    handoff are now explicit. Runner code, materialized data, local checkpoints,
+    environment lock, and smoke-test evidence do not yet exist, so the experiment
+    is not EXECUTABLE.
+  executable: false
 
 source_research:
   artifacts:
@@ -16,110 +28,498 @@ research_finding: >
   identity conditioning suppresses legitimate age transformation.
 
 objective: >
-  Measure the Identity–Age trade-off of stock PuLID under progressively larger
-  Re-Aging transformations and determine whether it should be promoted,
-  modified with Age-Aware Identity Conditioning, or downgraded to an
-  architecture reference.
+  Measure the Identity–Age trade-off of stock PuLID-FLUX-v0.9.1 under
+  progressively larger Re-Aging transformations and determine whether it
+  should be promoted, modified with Age-Aware Identity Conditioning, or
+  downgraded to an architecture reference.
 
 hypotheses:
-  H1: >
-    Increasing identity conditioning strength may improve identity similarity
-    while suppressing realized age transformation.
-  H2: >
-    Earlier or stronger identity injection may improve identity preservation
-    while reducing age editability.
-  H3: >
-    Rich visual identity features may carry more source-age appearance than
-    biometric identity features.
+  H1:
+    statement: >
+      Increasing identity conditioning strength may improve identity similarity
+      while suppressing realized age transformation.
+    phase_a_testability: direct
+  H2:
+    statement: >
+      Earlier identity insertion may improve identity preservation while
+      reducing age editability.
+    phase_a_testability: direct
+  H3:
+    statement: >
+      Rich visual identity features may carry more source-age appearance than
+      biometric identity features.
+    phase_a_testability: indirect_only
+    limitation: >
+      Stock PuLID does not expose independent biometric-vs-visual identity
+      controls. A causal H3 test requires an implementation/ablation task and
+      is outside Phase A's no-architecture-modification scope.
+    promotion_rule: >
+      Do not mark H3 supported or rejected from Phase A. Only record indirect
+      failure evidence that may justify a follow-up ablation.
 
 phase_a:
   inference_only: true
   retraining: false
   architecture_modification: false
+  upstream_behavior: stock_pulid_flux_v0.9.1
+  instrumentation_only_changes_allowed: true
+
+implementation:
+  upstream_repository: "https://github.com/ToTheBeginning/PuLID"
+  upstream_commit: "a66a6a1901729897fa1dc11d10397943caf15470"
+  upstream_commit_reason: >
+    Commit that released PuLID-v1.1 and PuLID-FLUX-v0.9.1. Later upstream
+    commits add unrelated support such as FLUX.1-Krea-dev; pinning the release
+    revision reduces upstream drift.
+  upstream_entrypoint_reference: "app_flux.py"
+  upstream_core_paths:
+    - "app_flux.py"
+    - "flux/sampling.py"
+    - "flux/model.py"
+    - "flux/util.py"
+    - "pulid/pipeline_flux.py"
+  upstream_patch_policy: >
+    No architecture-changing patch. Reproducibility-only instrumentation is
+    allowed and must be recorded as an exact diff if required to pin downloads
+    or expose batch execution.
+  project_commit:
+    value: null
+    required_at: EXECUTABLE
+    meaning: >
+      Exact sai-reaging commit containing the implemented runner/config/evaluator
+      wrappers used for execution.
+
+  model_assets:
+    pulid:
+      identifier: "PuLID-FLUX-v0.9.1"
+      source: "https://huggingface.co/guozinan/PuLID"
+      filename: "pulid_flux_v0.9.1.safetensors"
+      sha256: "92c41c3af322b02e58e1b32842e4601e08c8f16ec1fe80089dbe957df510f51d"
+      license: "Apache-2.0"
+      load_policy: >
+        Download explicitly and pass as local --pretrained_model path; do not
+        rely on an unpinned automatic latest-model download during execution.
+    backbone:
+      identifier: "FLUX.1-dev"
+      source: "black-forest-labs/FLUX.1-dev"
+      filename: "flux1-dev.safetensors"
+      precision: "bf16"
+      sha256:
+        value: null
+        required_at: EXECUTABLE
+      license: "flux-1-dev-non-commercial-license"
+      access: gated
+      note: >
+        Phase A is research-only. The FLUX.1-dev dependency means experiment
+        success cannot by itself establish commercial production clearance.
+    autoencoder:
+      source: "black-forest-labs/FLUX.1-dev"
+      filename: "ae.safetensors"
+      sha256:
+        value: null
+        required_at: EXECUTABLE
+    pulid_identity_dependency:
+      source: "DIAMONIK7777/antelopev2"
+      revision: "ba0c3e10f4548361eb9a63265d87ce1140ab5a05"
+      key_file: "glintr100.onnx"
+      key_file_sha256: "4ab1d6435d639628a6f3e5008dd4f929edf4c4124b1a7169e1048f9fef534cdf"
+      role: conditioning_dependency
+      note: >
+        This evaluator family must not be the sole identity metric because it is
+        part of PuLID conditioning.
+
+  environment_target:
+    os: "Linux x86_64"
+    python: "3.10"
+    framework: "PyTorch"
+    framework_version: "2.0.1"
+    torchvision_version: "0.15.2"
+    cuda_runtime_target: "11.8"
+    upstream_requirements: "ToTheBeginning/PuLID@a66a6a1 requirements.txt"
+    precision: "bf16"
+    fp8: false
+    dependency_lock:
+      value: null
+      required_at: EXECUTABLE
+      target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/requirements.lock.txt"
+    environment_freeze:
+      value: null
+      required_at: EXECUTABLE
+      target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/pip-freeze.txt"
+    reason_for_bf16: >
+      Official PuLID-FLUX documentation reports facial-detail degradation under
+      fp8. Because this experiment measures identity and aging detail, fp8 is
+      excluded from the primary experiment.
+
+  project_side_components_to_implement:
+    - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/run_phase_a.py"
+      role: >
+        Non-interactive batch runner that imports the pinned PuLID code and
+        executes the exact Phase A matrix.
+    - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate.py"
+      role: >
+        Run identity/age evaluation, pair PuLID outputs with no-PuLID baselines,
+        compute metrics, and emit machine-readable results.
+    - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/annotate_failures.py"
+      role: >
+        Produce a deterministic review sheet / annotation manifest for the
+        predefined Re-Aging failure taxonomy.
+    - path: "experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml"
+      role: canonical_generation_sweep
+    - path: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv"
+      role: materialized_input_manifest
+    - path: "experiments/EXP-001-pulid-reaging-stress-test/environment/requirements.lock.txt"
+      role: resolved_dependency_lock
 
 variables:
   independent:
-    age_gap: null
-    identity_strength: null
-    identity_insertion_start: null
-    seeds: null
+    treatment:
+      baseline:
+        pulid_enabled: false
+        implementation: "id_image=None"
+      pulid:
+        pulid_enabled: true
+    requested_age_delta_years:
+      values: [-30, -15, 0, 15, 30]
+      target_age_rule: "source_age + requested_age_delta_years"
+    identity_strength:
+      parameter: "id_weight"
+      values: [0.5, 1.0, 1.5, 2.0]
+    identity_insertion_start:
+      parameter: "start_step"
+      values: [0, 4, 8]
+      interpretation: >
+        Integer denoising-step index. PuLID is passed to the DiT only when
+        current step index i >= start_step.
+    seeds:
+      primary: [17, 101]
+      conditional_confirmation: [1009]
+
   controlled:
-    backbone: null
-    sampler_or_solver: null
-    inference_steps: null
-    image_resolution: null
-    prompt_template: null
-    preprocessing: null
+    backbone_name: "flux-dev"
+    checkpoint_precision: "bf16"
+    offload: true
+    aggressive_offload: false
+    fp8: false
+    onnx_provider: "gpu"
+    sampler_or_solver: "official PuLID FLUX rectified-flow denoise loop"
+    inference_steps: 20
+    image_resolution:
+      width: 896
+      height: 1152
+    guidance: 4.0
+    true_cfg: 1.0
+    true_cfg_mode: "fake CFG / distilled guidance"
+    timestep_to_start_cfg: 1
+    max_sequence_length: 128
+    prompt_template: >
+      photorealistic head-and-shoulders portrait of a {target_age}-year-old
+      {gender_token}, neutral expression, looking at camera, natural skin
+      texture, realistic facial proportions, plain unobtrusive background
+    negative_prompt: null
+    negative_prompt_reason: >
+      true_cfg=1.0 disables the upstream true-CFG branch, so the negative prompt
+      is not consumed by the denoising path.
+    source_preprocessing: >
+      Preserve original pixels except EXIF orientation and RGB conversion.
+      PuLID's stock pipeline then applies resize_numpy_image_long(..., 1024),
+      InsightFace/AntelopeV2 embedding extraction, facexlib alignment/parsing,
+      and EVA-CLIP visual identity extraction.
+
+sweep:
+  source_count: 8
+  source_age_range: [48, 52]
+  primary_runs:
+    no_pulid: 80
+    pulid: 960
+    total: 1040
+  derivation: >
+    8 sources * 5 age deltas * 2 seeds * (1 no-PuLID baseline +
+    4 id_weight values * 3 start_step values) = 1040 images.
+  conditional_confirmation_rule: >
+    Use seed 1009 only for configurations within 0.05 of a decision threshold,
+    for strata with contradictory seed/identity behavior, or when bootstrap
+    uncertainty prevents a decision. Record the reason before launching the
+    confirmation runs.
 
 inputs:
-  dataset_manifest: null
-  preprocessing_version: null
-  prompt_or_conditioning_manifest: null
+  dataset:
+    preferred: "AgeDB"
+    source_paper: "AgeDB: The First Manually Collected, In-The-Wild Age Database"
+    access_page: "https://ibug.doc.ic.ac.uk/resources/agedb/"
+    rationale: >
+      Same-identity metadata and manually collected year-level age labels make
+      AgeDB suitable for controlled age-editability stress testing.
+    raw_data_in_repo: false
+    access_terms_verified:
+      value: false
+      required_at: EXECUTABLE
+    fallback_policy: >
+      If AgeDB access/license terms cannot be satisfied, replace it with a
+      research-cleared, year-labeled face set while preserving this manifest
+      schema, age range, source count, and selection gates. Any replacement
+      requires an experiment artifact update before execution.
 
-implementation:
-  upstream_repository: null
-  upstream_commit: null
-  project_commit: null
-  checkpoint:
-    identifier: null
-    source: null
-    checksum: null
-    license: null
-  environment:
-    os: null
-    python: null
-    framework: null
-    framework_version: null
-    cuda_or_accelerator: null
-    dependencies_lock: null
-  exact_commands: null
+  selection_protocol:
+    source_age_min: 48
+    source_age_max: 52
+    distinct_identities: true
+    one_source_image_per_identity: true
+    gender_balance:
+      requested: "4 M / 4 F using dataset-provided labels"
+      inference_from_appearance_allowed: false
+    quality_gates:
+      - "single dominant face"
+      - "face detector succeeds"
+      - "near-frontal pose; target |yaw| <= 20 degrees"
+      - "no heavy face occlusion"
+      - "no sunglasses covering the eyes"
+      - "no extreme expression"
+      - "sufficient face resolution for 112x112 identity alignment"
+    deterministic_selection_seed: 20260923
+    deterministic_selection_rule: >
+      Filter by gates, group by dataset-provided gender label, sort eligible
+      rows by subject identifier + image identifier, then sample four per group
+      using deterministic_selection_seed.
+
+  dataset_manifest:
+    template: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.template.csv"
+    materialized_path: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv"
+    materialized_status: pending_implementation
+    required_columns:
+      - sample_id
+      - subject_id
+      - source_path
+      - source_sha256
+      - source_age
+      - gender_label
+      - face_bbox_xyxy
+      - yaw_deg
+      - selection_gate_pass
+      - notes
 
 evaluation:
-  metrics:
-    identity_preservation: null
-    target_age_accuracy: null
-    realized_age_displacement: null
-    identity_age_pareto: null
-    failure_taxonomy:
-      - identity_drift
-      - weak_age_transformation
-      - texture_only_aging
-      - soft_tissue_shape_aging_suppression
-      - face_shape_drift
-      - expression_loss
-      - hair_age_leakage
-  identity_evaluators: []
-  age_evaluators: []
-  metric_implementation: null
-  evaluator_independence_notes: null
+  face_detection_failure_policy: >
+    Record detection/alignment failures as failures; do not silently drop them
+    from aggregate denominators.
+
+  identity_evaluators:
+    - name: "AdaFace R100 WebFace12M"
+      role: primary_decision_metric
+      repository: "https://github.com/mk-minchul/AdaFace"
+      commit: "c60eaa786a42c03444f3df7096dbaf9d57ae010d"
+      checkpoint_source: "official AdaFace pretrained-model link for R100 WebFace12M"
+      checkpoint_sha256:
+        value: null
+        required_at: EXECUTABLE
+      preprocessing: >
+        Official AdaFace alignment/inference path: aligned 112x112 face,
+        BGR channel order, normalized mean=0.5/std=0.5.
+      independence: >
+        Independent from PuLID's AntelopeV2 conditioning embedding. Use for
+        architecture decisions.
+    - name: "AntelopeV2 glintr100"
+      role: aligned_diagnostic_only
+      source: "DIAMONIK7777/antelopev2"
+      revision: "ba0c3e10f4548361eb9a63265d87ce1140ab5a05"
+      checkpoint_sha256: "4ab1d6435d639628a6f3e5008dd4f929edf4c4124b1a7169e1048f9fef534cdf"
+      independence: >
+        Not independent; PuLID uses this representation in conditioning.
+        Report it only to quantify evaluator-alignment effects. Do not use it
+        as the sole promotion/downgrade metric.
+
+  age_evaluators:
+    - name: "MiVOLO VOLO-D1 face-only age+gender"
+      role: primary_age_metric
+      repository: "https://github.com/WildChlamydia/MiVOLO"
+      commit: "37475e3f8818b5f22448003feec3e64b01bfb188"
+      checkpoint_source: "official IMDB-cleaned face-only age+gender checkpoint"
+      checkpoint_reference: "Google Drive id 1NlsNEVijX2tjMe8LBb1rI56WB_ADVHeP"
+      checkpoint_sha256:
+        value: null
+        required_at: EXECUTABLE
+      independence: >
+        PuLID does not condition on MiVOLO age features. Use face-only mode to
+        avoid body/clothing cues becoming an age-evaluation confounder.
+
+  metric_definitions:
+    identity_similarity_primary: >
+      Cosine similarity between source and generated AdaFace embeddings.
+    identity_gain_vs_baseline: >
+      id_similarity(PuLID) - id_similarity(no-PuLID) for the same
+      source/target/seed.
+    target_age_error: "abs(predicted_generated_age - target_age)"
+    realized_age_delta: "predicted_generated_age - predicted_source_age"
+    requested_age_delta: "target_age - source_age_label"
+    signed_age_attainment: >
+      realized_age_delta / requested_age_delta for non-zero requested deltas.
+    baseline_editable_pair: >
+      For non-zero requested deltas, no-PuLID realized_age_delta must have the
+      requested sign and achieve at least 50% of |requested_age_delta|.
+    age_edit_retention_vs_baseline: >
+      realized_age_delta(PuLID) / realized_age_delta(no-PuLID), computed only
+      for baseline_editable pairs with matched source/target/seed.
+    evaluation_success_rate: >
+      Fraction of planned samples for which required face detection, alignment,
+      identity embedding, and age prediction all succeed.
+
+  failure_taxonomy:
+    - identity_drift
+    - weak_age_transformation
+    - texture_only_aging
+    - soft_tissue_shape_aging_suppression
+    - face_shape_drift
+    - expression_loss
+    - hair_age_leakage
+    - evaluator_face_detection_failure
+    - evaluator_alignment_failure
+    - background_or_composition_drift
+
+analysis_plan:
+  paired_analysis_unit: "source_id + requested_age_delta + seed"
+  primary_large_gap_strata: [-30, 30]
+  baseline_guardrail: >
+    Do not interpret low age_edit_retention when the matched no-PuLID baseline
+    is not baseline_editable. Count those cases as backbone/prompt failures.
+  H1_test: >
+    Within each age-gap/start-step stratum, summarize the association of
+    id_weight with AdaFace identity similarity and age-edit retention.
+    H1 evidence requires the expected direction (identity up, age retention
+    down) in at least 75% of non-zero-gap strata; report bootstrap uncertainty.
+  H2_test: >
+    Within each age-gap/id-weight stratum, summarize the association of
+    start_step with AdaFace identity similarity and age-edit retention.
+    H2 evidence requires the expected direction (identity down as start_step
+    increases, age retention up) in at least 75% of non-zero-gap strata;
+    report bootstrap uncertainty.
+  H3_test: "not_performed_in_phase_a"
+  aggregation:
+    - median
+    - interquartile_range
+    - bootstrap_95_percent_interval
+    - per_identity_scatter
+    - per_seed_scatter
+  pareto_axes:
+    x: "age_edit_retention_vs_baseline"
+    y: "AdaFace identity_gain_vs_baseline"
 
 decision_criteria:
-  useful_identity_age_pareto_region: >
-    Promote PuLID as a stronger Architecture Candidate for Stage A.
-  identity_improves_but_age_transformation_collapses: >
-    Investigate Age-Aware Identity Conditioning / selective relaxation of
-    age-bearing visual identity.
-  no_useful_balance_under_stock_controls: >
-    Downgrade stock PuLID to an Architecture Reference for this role.
+  threshold_type: "project engineering screening thresholds; not universal model-quality claims"
+
+  useful_identity_age_pareto_region:
+    required_on_primary_large_gap_strata:
+      median_identity_gain_vs_baseline_min: 0.05
+      median_age_edit_retention_min: 0.75
+      evaluation_success_rate_min: 0.95
+      directional_coverage: "both -30 and +30 year strata"
+    outcome: >
+      Promote PuLID as a stronger Stage A Architecture Candidate and retain
+      stock PuLID controls as a viable identity-conditioning baseline.
+
+  identity_improves_but_age_transformation_collapses:
+    trigger: >
+      On baseline-editable +/-30-year strata, median AdaFace identity gain is
+      >= 0.05 while median age-edit retention is <= 0.50 for the stronger
+      identity settings, with the pattern reproduced across identities/seeds.
+    outcome: >
+      Investigate Age-Aware Identity Conditioning / selective relaxation of
+      age-bearing visual identity. Create a separate implementation/ablation
+      task before treating H3 as tested.
+
+  no_useful_balance_under_stock_controls:
+    trigger: >
+      No tested id_weight/start_step configuration reaches the useful Pareto
+      region in both aging directions after baseline guardrails and failure
+      analysis.
+    outcome: >
+      Downgrade stock PuLID to Architecture Reference for this role while
+      retaining reusable concepts such as dedicated identity cross-attention.
 
 known_confounders:
   - "Identity evaluator alignment bias with the conditioning representation."
-  - "Age evaluator alignment bias or source-age estimation error."
-  - "Prompt, backbone, sampler/solver, or preprocessing interactions that may masquerade as a PuLID effect."
-  - "Seed sensitivity and input-image quality."
+  - "Age estimator bias and age-dependent error."
+  - "Prompt-only FLUX age controllability may fail before PuLID is introduced."
+  - "AgeDB source-image quality and celebrity/domain bias."
+  - "Seed sensitivity."
+  - "Pose/expression/composition drift may alter evaluator scores."
+  - "Generated texture can change apparent age without correct soft-tissue aging."
+  - "Stock PuLID beta limitation may be stronger on some male inputs."
+  - "Transitive auto-downloaded model revisions can drift unless materialized and hashed."
 
 execution:
-  hardware: null
+  hardware_requirement:
+    gpu: "NVIDIA CUDA GPU with >= 32 GB VRAM"
+    system_ram: ">= 64 GB recommended"
+    disk_free: ">= 60 GB recommended before model/cache materialization"
+    mode: "bf16 + --offload"
+    rationale: >
+      Official PuLID-FLUX documentation reports bf16+offload peak VRAM below
+      30 GB. Keep fp8 and aggressive offload out of the primary experiment.
+  observed_hardware:
+    value: null
+    required_at: EXECUTABLE
   executed_at: null
+
+  planned_cli_contract:
+    generation: >
+      python experiments/EXP-001-pulid-reaging-stress-test/scripts/run_phase_a.py
+      --config experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml
+      --manifest experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv
+      --output-dir experiments/EXP-001-pulid-reaging-stress-test/outputs/raw
+    evaluation: >
+      python experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate.py
+      --config experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml
+      --manifest experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv
+      --raw-dir experiments/EXP-001-pulid-reaging-stress-test/outputs/raw
+      --output experiments/EXP-001-pulid-reaging-stress-test/outputs/metrics.parquet
+    status: contract_fixed_code_not_yet_implemented
 
 artifacts:
   raw_outputs:
-    location: null
-    manifest: null
-  aggregated_results: null
-  failure_annotations: null
-  selected_examples: null
+    location: "experiments/EXP-001-pulid-reaging-stress-test/outputs/raw/"
+    manifest: "experiments/EXP-001-pulid-reaging-stress-test/outputs/raw_manifest.jsonl"
+    status: not_created
+  aggregated_results:
+    path: "experiments/EXP-001-pulid-reaging-stress-test/outputs/metrics.parquet"
+    status: not_created
+  failure_annotations:
+    path: "experiments/EXP-001-pulid-reaging-stress-test/outputs/failures.csv"
+    status: not_created
+  selected_examples:
+    path: "experiments/EXP-001-pulid-reaging-stress-test/outputs/selected_examples/"
+    status: not_created
+  closeout:
+    path: "experiments/EXP-001-pulid-reaging-stress-test/reports/experiment_closeout.md"
+    status: not_created
 
-notes: >
-  Null fields are intentionally unresolved at DESIGNED state. They must be
-  fixed as required before promotion to IMPLEMENTATION-READY / EXECUTABLE.
+implementation_handoff:
+  remaining_to_reach_executable:
+    - "Implement batch generation runner without changing PuLID architecture."
+    - "Implement AdaFace and MiVOLO evaluator wrappers."
+    - "Acquire AgeDB under acceptable research terms and materialize the 8-row manifest."
+    - "Download/pin all model assets; record local SHA256 values and access/license metadata."
+    - "Resolve and commit the environment dependency lock; save pip freeze."
+    - "Run a 1-source smoke test for baseline + one PuLID setting."
+    - "Verify output naming, raw manifest, deterministic seeds, and evaluator success."
+    - "Record exact sai-reaging project commit and observed hardware."
+  separate_follow_up_if_needed:
+    H3: >
+      If Phase A shows age suppression worth investigating, create an
+      Implementation task to expose/ablate biometric vs rich visual identity
+      contributions. Do not fold that architecture change into Phase A.
+
+readiness:
+  designed_requirements_complete: true
+  repository_model_assumptions_fixed: true
+  generation_configuration_fixed: true
+  dataset_contract_fixed: true
+  evaluation_plan_fixed: true
+  decision_rules_fixed: true
+  implementation_plan_fixed: true
+  code_present: false
+  environment_materialized: false
+  checkpoints_materialized: false
+  dataset_materialized: false
+  smoke_test_passed: false
+  current_state_justified: IMPLEMENTATION-READY
+  next_state: EXECUTABLE

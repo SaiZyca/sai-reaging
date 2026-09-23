@@ -1,0 +1,49 @@
+schema_version: "0.1"
+experiment_id: EXP-001
+phase: A
+
+upstream:
+  repository: "https://github.com/ToTheBeginning/PuLID"
+  commit: "a66a6a1901729897fa1dc11d10397943caf15470"
+  pulid_version: "v0.9.1"
+  pulid_checkpoint_filename: "pulid_flux_v0.9.1.safetensors"
+  backbone_name: "flux-dev"
+
+generation:
+  precision: "bf16"
+  offload: true
+  aggressive_offload: false
+  fp8: false
+  onnx_provider: "gpu"
+  width: 896
+  height: 1152
+  num_steps: 20
+  guidance: 4.0
+  true_cfg: 1.0
+  timestep_to_start_cfg: 1
+  max_sequence_length: 128
+  prompt_template: >
+    photorealistic head-and-shoulders portrait of a {target_age}-year-old
+    {gender_token}, neutral expression, looking at camera, natural skin
+    texture, realistic facial proportions, plain unobtrusive background
+
+sweep:
+  requested_age_delta_years: [-30, -15, 0, 15, 30]
+  id_weight: [0.5, 1.0, 1.5, 2.0]
+  start_step: [0, 4, 8]
+  seeds: [17, 101]
+  conditional_confirmation_seed: 1009
+  baseline:
+    pulid_enabled: false
+    implementation: "id_image=None"
+
+dataset:
+  manifest: "../dataset_manifest.csv"
+  expected_source_count: 8
+  source_age_range: [48, 52]
+
+output:
+  raw_dir: "../outputs/raw"
+  raw_manifest: "../outputs/raw_manifest.jsonl"
+  naming_template: >
+    {sample_id}__d{age_delta:+03d}__{treatment}__w{id_weight_or_na}__s{start_step_or_na}__seed{seed}.png
