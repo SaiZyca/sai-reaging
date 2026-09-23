@@ -42,6 +42,7 @@ def main():
     if ages.empty:
         raise RuntimeError("age evaluator output is empty")
 
+    raw = raw.drop_duplicates("run_id", keep="last")
     ids = ids.drop_duplicates("run_id", keep="last")
     ages = ages.drop_duplicates("run_id", keep="last")
     df = raw.merge(ids, on=["run_id", "sample_id"], how="left")
