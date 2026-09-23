@@ -1,0 +1,1 @@
+sample_id,subject_id,source_path,source_sha256,source_age,gender_label,face_bbox_xyxy,yaw_deg,selection_gate_pass,notes
