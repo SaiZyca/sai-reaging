@@ -1,0 +1,55 @@
+schema_version: "0.1"
+experiment_id: EXP-001
+captured_at: "2026-09-23"
+platform:
+  os_product: "Windows 10 Pro"
+  os_version: "2009"
+  architecture: "64-bit"
+gpu:
+  name: "NVIDIA GeForce RTX 5080"
+  driver_version: "616.92"
+  memory_total_mib: 16303
+  compute_capability: "12.0"
+runtime:
+  generation:
+    torch: "2.7.1+cu128"
+    cuda_runtime: "12.8"
+    cuda_available: true
+  identity:
+    torch: "2.7.1+cu128"
+    cuda_runtime: "12.8"
+    cuda_available: true
+  age:
+    torch: "2.7.1+cu128"
+    cuda_runtime: "12.8"
+    cuda_available: true
+  analysis:
+    accelerator: "CPU sufficient"
+verification:
+  windows_environment_verification_passed: true
+  blackwell_sm120_execution_verified: true
+  pip_check:
+    generation: passed
+    identity: passed
+    age: passed
+    analysis: passed
+dependency_locks:
+  generation: "environment/generation.lock.txt"
+  identity: "environment/identity.lock.txt"
+  age: "environment/age.lock.txt"
+  analysis: "environment/analysis.lock.txt"
+privacy:
+  lock_scan_for_local_paths: passed
+  scanned_patterns:
+    - "file:"
+    - "I:\\"
+    - "C:\\"
+    - "Users\\"
+  raw_observed_directory_committed: false
+notes:
+  - >
+    Runtime uses PyTorch 2.7.1+cu128 because the observed RTX 5080 / Blackwell
+    sm_120 GPU is not executable under the historical upstream PyTorch stacks.
+  - >
+    This snapshot records runtime compatibility only. It does not imply model
+    checkpoint, dataset, or end-to-end experiment smoke-test readiness.
