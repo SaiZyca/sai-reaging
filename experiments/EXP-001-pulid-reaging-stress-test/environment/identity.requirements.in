@@ -1,0 +1,9 @@
+# EXP-001 identity-evaluation environment
+# Minimal inference-only AdaFace environment. The official AdaFace repository
+# constrains PyTorch <=1.13.1; keep this isolated from PuLID generation.
+torch==1.13.1
+torchvision==0.14.1
+numpy<2
+Pillow
+opencv-python
+PyYAML
