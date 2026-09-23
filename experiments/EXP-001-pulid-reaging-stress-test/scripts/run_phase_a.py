@@ -40,6 +40,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--pulid-checkpoint", required=True, type=Path)
     p.add_argument("--flux-checkpoint", required=True, type=Path)
     p.add_argument("--ae-checkpoint", required=True, type=Path)
+    p.add_argument("--t5-snapshot", required=True, type=Path)
+    p.add_argument("--clip-snapshot", required=True, type=Path)
+    p.add_argument("--eva-clip-checkpoint", required=True, type=Path)
+    p.add_argument("--facexlib-weights", required=True, type=Path)
+    p.add_argument("--antelope-root", required=True, type=Path)
     p.add_argument("--output-dir", required=True, type=Path)
     p.add_argument("--raw-manifest", type=Path, default=None)
     p.add_argument("--sample-id", default=None)
@@ -61,6 +66,11 @@ def main() -> None:
     args.manifest = args.manifest.resolve()
     args.dataset_root = args.dataset_root.resolve()
     args.pulid_repo = args.pulid_repo.resolve()
+    args.t5_snapshot = args.t5_snapshot.resolve()
+    args.clip_snapshot = args.clip_snapshot.resolve()
+    args.eva_clip_checkpoint = args.eva_clip_checkpoint.resolve()
+    args.facexlib_weights = args.facexlib_weights.resolve()
+    args.antelope_root = args.antelope_root.resolve()
     args.output_dir = args.output_dir.resolve()
     if args.raw_manifest is not None:
         args.raw_manifest = args.raw_manifest.resolve()
@@ -100,6 +110,17 @@ def main() -> None:
     ae_sha = assert_file_sha256(
         args.ae_checkpoint, expected_ae_sha, "FLUX autoencoder checkpoint"
     )
+
+    for directory, label in [
+        (args.t5_snapshot, "T5 snapshot"),
+        (args.clip_snapshot, "CLIP snapshot"),
+        (args.facexlib_weights, "FaceXLib weights"),
+        (args.antelope_root, "Antelope root"),
+    ]:
+        if not directory.is_dir():
+            raise FileNotFoundError(f"{label} not found: {directory}")
+    if not args.eva_clip_checkpoint.is_file():
+        raise FileNotFoundError(f"EVA-CLIP checkpoint not found: {args.eva_clip_checkpoint}")
 
     rows = load_dataset_manifest(args.manifest)
     by_sample = {r["sample_id"]: r for r in rows}
@@ -145,8 +166,66 @@ def main() -> None:
         return
 
     sys.path.insert(0, str(args.pulid_repo))
+    import torch
+    import app_flux  # type: ignore
     import flux.util as flux_util  # type: ignore
-    from app_flux import FluxGenerator  # type: ignore
+    from flux.modules.conditioner import HFEmbedder  # type: ignore
+    from transformers import CLIPTextModel, CLIPTokenizer
+
+    class LocalCLIPEmbedder(torch.nn.Module):
+        def __init__(self, version: str, max_length: int, **hf_kwargs):
+            super().__init__()
+            self.is_clip = True
+            self.max_length = max_length
+            self.output_key = "pooler_output"
+            self.tokenizer = CLIPTokenizer.from_pretrained(
+                version, max_length=max_length, local_files_only=True
+            )
+            self.hf_module = CLIPTextModel.from_pretrained(
+                version, local_files_only=True, **hf_kwargs
+            )
+            self.hf_module = self.hf_module.eval().requires_grad_(False)
+
+        def forward(self, text: list[str]):
+            batch_encoding = self.tokenizer(
+                text,
+                truncation=True,
+                max_length=self.max_length,
+                return_length=False,
+                return_overflowing_tokens=False,
+                padding="max_length",
+                return_tensors="pt",
+            )
+            outputs = self.hf_module(
+                input_ids=batch_encoding["input_ids"].to(self.hf_module.device),
+                attention_mask=None,
+                output_hidden_states=False,
+            )
+            return outputs[self.output_key]
+
+    def load_local_t5(device: str = "cuda", max_length: int = 512):
+        return HFEmbedder(
+            str(args.t5_snapshot),
+            max_length=max_length,
+            torch_dtype=torch.bfloat16,
+            local_files_only=True,
+        ).to(device)
+
+    def load_local_clip(device: str = "cuda"):
+        return LocalCLIPEmbedder(
+            str(args.clip_snapshot),
+            max_length=77,
+            torch_dtype=torch.bfloat16,
+        ).to(device)
+
+    app_flux.load_t5 = load_local_t5
+    app_flux.load_clip = load_local_clip
+    FluxGenerator = app_flux.FluxGenerator
+
+    os.environ["EXP001_EVA_CLIP_PATH"] = str(args.eva_clip_checkpoint)
+    os.environ["EXP001_FACEXLIB_WEIGHTS"] = str(args.facexlib_weights)
+    os.environ["EXP001_ANTELOPE_ROOT"] = str(args.antelope_root)
+    os.environ["EXP001_OFFLINE_ASSETS"] = "1"
 
     model_name = config["upstream"]["backbone_name"]
     flux_util.configs[model_name].ckpt_path = str(args.flux_checkpoint)
@@ -240,6 +319,9 @@ def main() -> None:
             "pulid_checkpoint_sha256": pulid_sha,
             "flux_checkpoint_sha256": flux_sha,
             "ae_checkpoint_sha256": ae_sha,
+            "t5_snapshot": args.t5_snapshot.name,
+            "clip_snapshot": args.clip_snapshot.name,
+            "eva_clip_checkpoint_sha256": sha256_file(args.eva_clip_checkpoint),
             "backbone": config["upstream"]["backbone_name"],
             "precision": gen_cfg["precision"],
             "num_steps": int(gen_cfg["num_steps"]),
