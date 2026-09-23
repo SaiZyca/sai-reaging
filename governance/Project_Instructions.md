@@ -1,6 +1,6 @@
 # Sai Re-Aging — Project Instructions
 
-**Version:** 1.0
+**Version:** 1.1
 **Role:** AI Research Behavior / High-Level Research Contract
 **Deployed Surface:** ChatGPT Project Instructions
 
@@ -87,7 +87,7 @@ Paper Discovery → Technical Understanding → Model Comparison → Module Sele
 
 資訊層級：
 - Research Chat = Working Context
-- GitHub Repository `rd367/sai-reaging` = Versioned Research Evidence / Execution Layer
+- GitHub Repository `saizyca-ai-code/sai-reaging` = Versioned Research Evidence / Execution Layer
 - `Re-Aging_Research_Map.md` = Canonical High-Level Technical State
 - `Re-Aging_Research_Workflow.md` = Canonical Process State
 - GitHub Issue / Project = Operational Tracking Layer
