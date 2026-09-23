@@ -94,6 +94,13 @@ implementation:
       marker-verified text replacement rather than git apply. This avoids
       platform-specific unified-diff / line-ending failure while preserving the
       same auditable semantic change.
+  checkpoint_gate_instrumentation_record:
+    path: "experiments/EXP-001-pulid-reaging-stress-test/patches/pulid_checkpoint_gate_instrumentation.md"
+    purpose: >
+      Documents the additional local-asset routing for EVA-CLIP, FaceXLib,
+      AntelopeV2, and local T5/CLIP snapshots introduced by the Checkpoint Gate.
+      These changes are reproducibility instrumentation only and do not alter
+      model math, injection locations, or experiment controls.
   project_commit:
     value: null
     required_at: EXECUTABLE
