@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
 THIRD_PARTY="$ROOT/third_party"
+PATCH_DIR="$ROOT/experiments/EXP-001-pulid-reaging-stress-test/patches"
 mkdir -p "$THIRD_PARTY"
 
 clone_at() {
@@ -34,3 +35,13 @@ clone_at "MiVOLO" "https://github.com/WildChlamydia/MiVOLO.git" \
   "37475e3f8818b5f22448003feec3e64b01bfb188"
 
 echo "Pinned third-party repositories are ready under $THIRD_PARTY"
+
+
+PULID_PATCH="$PATCH_DIR/pulid_reproducibility.patch"
+if git -C "$THIRD_PARTY/PuLID" apply --reverse --check "$PULID_PATCH" >/dev/null 2>&1; then
+  echo "PuLID reproducibility patch already applied"
+else
+  git -C "$THIRD_PARTY/PuLID" apply --check "$PULID_PATCH"
+  git -C "$THIRD_PARTY/PuLID" apply "$PULID_PATCH"
+  echo "Applied PuLID reproducibility patch"
+fi
