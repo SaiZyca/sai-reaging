@@ -82,6 +82,13 @@ implementation:
     No architecture-changing patch. Reproducibility-only instrumentation is
     allowed and must be recorded as an exact diff if required to pin downloads
     or expose batch execution.
+  upstream_instrumentation_patch:
+    path: "experiments/EXP-001-pulid-reaging-stress-test/patches/pulid_reproducibility.patch"
+    purpose: >
+      Pin AntelopeV2 to the recorded revision and prevent an unnecessary
+      automatic PuLID checkpoint download when an explicitly hashed local
+      checkpoint is supplied. The patch does not alter model math or identity
+      injection behavior.
   project_commit:
     value: null
     required_at: EXECUTABLE
@@ -127,6 +134,20 @@ implementation:
       note: >
         This evaluator family must not be the sole identity metric because it is
         part of PuLID conditioning.
+    text_encoders:
+      t5:
+        source: "xlabs-ai/xflux_text_encoders"
+        revision:
+          value: null
+          required_at: EXECUTABLE
+      clip:
+        source: "openai/clip-vit-large-patch14"
+        revision:
+          value: null
+          required_at: EXECUTABLE
+      execution_requirement: >
+        Record the exact cached Hugging Face snapshot revisions used by the
+        smoke test before promotion to EXECUTABLE.
 
   environment_strategy:
     isolation: "stage-specific"
@@ -287,6 +308,15 @@ inputs:
       AgeDB suitable for controlled age-editability stress testing.
     raw_data_in_repo: false
     access_terms_verified:
+      value: true
+      verified_at: "2026-09-23"
+      source: "https://ibug.doc.ic.ac.uk/resources/agedb/"
+      terms_summary: >
+        AgeDB is available for non-commercial research only; annotations and
+        derived data may not be redistributed or exploited commercially.
+        Database access is downloadable from the official page, while the zip
+        password must be requested from the listed iBUG contact.
+    access_acquired:
       value: false
       required_at: EXECUTABLE
     fallback_policy: >
@@ -511,6 +541,8 @@ execution:
       --dataset-root <AGEDB_ROOT>
       --pulid-repo third_party/PuLID
       --pulid-checkpoint <PULID_V0_9_1_CHECKPOINT>
+      --flux-checkpoint <FLUX1_DEV_CHECKPOINT>
+      --ae-checkpoint <FLUX_AE_CHECKPOINT>
       --output-dir experiments/EXP-001-pulid-reaging-stress-test/outputs/raw
     identity_evaluation: >
       python experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate_identity_adaface.py
@@ -562,7 +594,7 @@ artifacts:
 implementation_handoff:
   remaining_to_reach_executable:
     - "Acquire AgeDB under acceptable research terms and materialize the 8-row manifest."
-    - "Download/pin all model assets, including the MiVOLO detector; record local SHA256 values and access/license metadata."
+    - "Download/pin all model assets, including FLUX/AE, text-encoder snapshot revisions, and the MiVOLO detector; record local SHA256 values and access/license metadata."
     - "Create the four isolated execution environments and commit resolved stage-specific locks."
     - "Run manifest validation and a 1-source generation/evaluation smoke test."
     - "Verify output naming, raw manifest, deterministic seeds, evaluator success, and paired metric aggregation."
