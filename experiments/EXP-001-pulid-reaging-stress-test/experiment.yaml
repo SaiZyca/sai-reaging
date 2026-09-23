@@ -219,6 +219,12 @@ implementation:
         role: "Create the predefined manual failure-annotation sheet."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/bootstrap_third_party.sh"
         role: "Clone and checkout the pinned third-party repository revisions."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/lock_private_manifest.py"
+        role: "Create a license-safe hash/aggregate lock for the private AgeDB manifest."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/patches/pulid_reproducibility.patch"
+        role: "Reproducibility-only upstream instrumentation; no model-math change."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/RUNBOOK.md"
+        role: "Local/manual checklist for the EXECUTABLE promotion gate."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml"
         role: canonical_generation_sweep
     pending_materialization:
