@@ -7,6 +7,7 @@ FluxGenerator directly. No PuLID architecture is modified.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
@@ -37,6 +38,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--dataset-root", required=True, type=Path)
     p.add_argument("--pulid-repo", required=True, type=Path)
     p.add_argument("--pulid-checkpoint", required=True, type=Path)
+    p.add_argument("--flux-checkpoint", required=True, type=Path)
+    p.add_argument("--ae-checkpoint", required=True, type=Path)
     p.add_argument("--output-dir", required=True, type=Path)
     p.add_argument("--raw-manifest", type=Path, default=None)
     p.add_argument("--sample-id", default=None)
@@ -56,8 +59,21 @@ def main() -> None:
     expected_repo = experiment["implementation"]["upstream_commit"]
     assert_git_revision(args.pulid_repo, expected_repo, "PuLID")
     expected_pulid_sha = experiment["implementation"]["model_assets"]["pulid"]["sha256"]
+    args.pulid_checkpoint = args.pulid_checkpoint.resolve()
+    args.flux_checkpoint = args.flux_checkpoint.resolve()
+    args.ae_checkpoint = args.ae_checkpoint.resolve()
     pulid_sha = assert_file_sha256(
         args.pulid_checkpoint, expected_pulid_sha, "PuLID-FLUX checkpoint"
+    )
+    backbone_asset = experiment["implementation"]["model_assets"]["backbone"]
+    ae_asset = experiment["implementation"]["model_assets"]["autoencoder"]
+    expected_flux_sha = backbone_asset["sha256"].get("value")
+    expected_ae_sha = ae_asset["sha256"].get("value")
+    flux_sha = assert_file_sha256(
+        args.flux_checkpoint, expected_flux_sha, "FLUX.1-dev checkpoint"
+    )
+    ae_sha = assert_file_sha256(
+        args.ae_checkpoint, expected_ae_sha, "FLUX autoencoder checkpoint"
     )
 
     rows = load_dataset_manifest(args.manifest)
@@ -83,7 +99,12 @@ def main() -> None:
         return
 
     sys.path.insert(0, str(args.pulid_repo))
+    import flux.util as flux_util  # type: ignore
     from app_flux import FluxGenerator  # type: ignore
+
+    model_name = config["upstream"]["backbone_name"]
+    flux_util.configs[model_name].ckpt_path = str(args.flux_checkpoint)
+    flux_util.configs[model_name].ae_path = str(args.ae_checkpoint)
 
     upstream_args = SimpleNamespace(
         fp8=bool(gen_cfg["fp8"]),
@@ -91,13 +112,19 @@ def main() -> None:
         pretrained_model=str(args.pulid_checkpoint),
         version=str(config["upstream"]["pulid_version"]),
     )
-    generator = FluxGenerator(
-        config["upstream"]["backbone_name"],
-        args.device,
-        bool(gen_cfg["offload"]),
-        bool(gen_cfg["aggressive_offload"]),
-        upstream_args,
-    )
+
+    previous_cwd = Path.cwd()
+    os.chdir(args.pulid_repo)
+    try:
+        generator = FluxGenerator(
+            model_name,
+            args.device,
+            bool(gen_cfg["offload"]),
+            bool(gen_cfg["aggressive_offload"]),
+            upstream_args,
+        )
+    finally:
+        os.chdir(previous_cwd)
 
     for idx, run in enumerate(planned, 1):
         if run["run_id"] in completed and not args.overwrite:
@@ -165,6 +192,8 @@ def main() -> None:
             "generation_seconds": round(elapsed, 4),
             "pulid_repository_commit": expected_repo,
             "pulid_checkpoint_sha256": pulid_sha,
+            "flux_checkpoint_sha256": flux_sha,
+            "ae_checkpoint_sha256": ae_sha,
             "backbone": config["upstream"]["backbone_name"],
             "precision": gen_cfg["precision"],
             "num_steps": int(gen_cfg["num_steps"]),
