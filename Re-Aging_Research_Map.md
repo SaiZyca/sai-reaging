@@ -1,9 +1,9 @@
 # Re-Aging Research Map
 
-**Version:** 0.5  
+**Version:** 0.6  
 **Project:** Sai_研究_Re-Aging  
-**State:** First-round Technical Landscape Screening completed; four P0 Deep Analyses completed; Experiment 01 designed  
-**Last Updated:** 2026-09-21
+**State:** First-round Technical Landscape Screening completed; four P0 Deep Analyses completed; Experiment 01 implementation-ready  
+**Last Updated:** 2026-09-23
 
 > This file is the canonical high-level research state for the project.  
 > It records durable technical conclusions, candidate technologies, architecture hypotheses, and research priorities.  
@@ -1701,7 +1701,7 @@ This question is now promoted from literature analysis to `Experiment 01 — PuL
 ## Experiment 01 — PuLID Re-Aging Stress Test
 
 **Research Type:** Experiment  
-**Status:** DESIGNED  
+**Status:** IMPLEMENTATION-READY  
 **Source Research:** Deep Analysis 04 — PuLID
 
 Research objective:
@@ -1745,6 +1745,12 @@ Biometric Identity Features
 ```
 
 H3 remains an **Experiment Hypothesis** and should not be treated as established fact.
+
+Phase A testability boundary:
+
+- **H1 / H2** can be tested directly with stock PuLID controls (`id_weight`, identity insertion start).
+- **H3** is **indirect-only in Phase A** because stock PuLID does not expose biometric identity and rich visual identity as independently controllable branches.
+- A causal H3 test requires a separate implementation / ablation task and must not be inferred from Phase A correlation alone.
 
 Phase A:
 
@@ -1792,24 +1798,31 @@ Experiment readiness:
 
 ```text
 Current:
-DESIGNED
+IMPLEMENTATION-READY
 
 Next:
-IMPLEMENTATION-READY
+EXECUTABLE
 ```
 
-Before execution, fix:
+Implementation contract now fixes:
 
-- repository / exact commit
-- checkpoint
-- environment
-- dataset manifest
-- parameter sweep
-- independent identity evaluator(s)
-- age evaluator(s)
-- seeds
-- exact commands
-- reproducibility record
+- PuLID-FLUX-v0.9.1 release revision and primary generation configuration
+- dataset selection / manifest contract
+- age-gap × identity-strength × insertion-start × seed sweep
+- independent identity evaluation + aligned diagnostic evaluator
+- age evaluation
+- paired no-PuLID baseline guardrail
+- decision thresholds and failure taxonomy
+- planned execution / artifact paths
+
+Before promotion to **EXECUTABLE**, materialize:
+
+- batch runner / evaluator code
+- environment lock
+- local checkpoints + verified hashes
+- dataset manifest / access metadata
+- smoke-test evidence
+- exact project commit + observed hardware
 
 Decision outcomes:
 
@@ -1847,7 +1860,7 @@ ARCHITECTURE / EXPERIMENT CANDIDATE
         ↓
 Experiment 01 — PuLID Re-Aging Stress Test
         ↓
-DESIGNED
+IMPLEMENTATION-READY
         ↓
-NEXT: IMPLEMENTATION-READY
+NEXT: EXECUTABLE
 ```
