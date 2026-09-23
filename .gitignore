@@ -32,4 +32,4 @@ third_party/AdaFace/
 third_party/MiVOLO/
 
 # Generated experiment outputs remain evidence artifacts outside normal Git commits
-experiments/**/outputs/
+experiments/**/outputs/\n\n# Local raw environment capture; commit only sanitized snapshot + locks\nexperiments/EXP-001-pulid-reaging-stress-test/environment/observed/\n
