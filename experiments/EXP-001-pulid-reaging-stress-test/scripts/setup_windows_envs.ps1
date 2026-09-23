@@ -62,7 +62,7 @@ Invoke-Checked -Exe $IdPython -CommandArgs @("-m", "pip", "install", "torch==2.7
 Install-NonTorchRequirements -PythonExe $IdPython -InputFile (Join-Path $EnvDir "identity.requirements.in")
 
 $AgePython = New-Python310Venv ".venv-exp001-age"
-Invoke-Checked -Exe $AgePython -CommandArgs @("-m", "pip", "install", "torch==2.0.1+cu118", "torchvision==0.15.2+cu118", "--extra-index-url", "https://download.pytorch.org/whl/cu118")
+Invoke-Checked -Exe $AgePython -CommandArgs @("-m", "pip", "install", "torch==2.7.1+cu128", "torchvision==0.22.1+cu128", "--extra-index-url", "https://download.pytorch.org/whl/cu128")
 Install-NonTorchRequirements -PythonExe $AgePython -InputFile (Join-Path $EnvDir "age.requirements.in")
 
 $AnalysisPython = New-Python310Venv ".venv-exp001-analysis"
