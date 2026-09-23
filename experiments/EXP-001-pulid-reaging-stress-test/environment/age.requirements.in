@@ -1,8 +1,8 @@
 # EXP-001 age-evaluation environment
 # MiVOLO image inference dependencies pinned from the official repository where
 # specified. Keep isolated from generation to avoid transitive dependency drift.
-torch==2.0.1+cu118
-torchvision==0.15.2+cu118
+torch==2.7.1+cu128
+torchvision==0.22.1+cu128
 numpy<2
 opencv-python
 huggingface_hub
