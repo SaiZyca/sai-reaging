@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 THIRD_PARTY="$ROOT/third_party"
 PATCH_DIR="$ROOT/experiments/EXP-001-pulid-reaging-stress-test/patches"
 mkdir -p "$THIRD_PARTY"
