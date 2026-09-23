@@ -1,10 +1,10 @@
 # Re-Aging Research Workflow
 
-**Version:** 1.4\
+**Version:** 1.5\
 **Project:** Sai_研究_Re-Aging\
 **Purpose:** Define how research chats, research state, context
-boundaries, experiments, and the `Re-Aging_Research_Map.md` are managed
-throughout the project.
+boundaries, GitHub research artifacts, experiments, and the
+`Re-Aging_Research_Map.md` are managed throughout the project.
 
 ------------------------------------------------------------------------
 
@@ -31,17 +31,27 @@ Research State Update
 Next Research Question
 ```
 
-The three main information layers have different responsibilities:
+The main information layers have different responsibilities:
 
 -   **Project Instructions** --- define how the AI should research and
     reason.
 -   **Research Chat** --- working context for investigation, discussion,
     comparison, and technical reasoning.
--   **Re-Aging_Research_Map.md** --- canonical high-level state of the
-    research program.
+-   **GitHub Research Repository** --- versioned research artifacts,
+    experiments, implementation, and auditable change history.
+-   **Re-Aging_Research_Map.md** --- canonical high-level technical state
+    of the research program.
+-   **Re-Aging_Research_Workflow.md** --- canonical process state for how
+    the research program operates.
 
 **Chat = Working Research Context**\
-**Research Map = Persistent / Canonical Research State**
+**GitHub Repository = Versioned Research Evidence / Execution Layer**\
+**Research Map = Persistent / Canonical High-Level Technical State**\
+**Research Workflow = Persistent / Canonical Process State**
+
+GitHub Issues and GitHub Projects are operational tracking layers. They
+must not silently become a second source of truth for technical
+conclusions or experiment evidence.
 
 Do not rely on chat history or project memory as the only long-term
 storage of important research conclusions.
@@ -649,7 +659,7 @@ result. The minimum reproducibility record is defined in Section 19.
 
 ------------------------------------------------------------------------
 
-## 15. Research State vs Detailed Notes
+## 15. Research State vs Detailed Artifacts
 
 The project should avoid turning `Re-Aging_Research_Map.md` into an
 oversized paper archive.
@@ -659,27 +669,51 @@ Use this separation:
 ``` text
 Detailed Paper / Repository Analysis
               ↓
-        Research Chat / Report
+       Research Chat / Report
               ↓
-       Durable Conclusions
+         Durable Evidence
+              ↓
+       Engineering Conclusion
               ↓
      Re-Aging_Research_Map.md
 ```
 
-If detailed research artifacts become numerous, separate reports may
-later be introduced, for example:
+The GitHub research repository is now the versioned artifact layer for
+durable research outputs.
+
+Current top-level conventions include:
 
 ``` text
-Model_Reports/
-Dataset_Reports/
-Experiment_Reports/
+research/
+├─ deep-analysis/
+├─ modules/
+├─ datasets/
+├─ evaluation/
+└─ architecture/
+
+experiments/
+└─ EXP-NNN-topic/
+
+references/
+third_party/
+data/
+src/            # introduced when reusable implementation exists
+configs/        # introduced when shared configuration exists
+scripts/        # introduced when reusable scripts exist
+tests/          # introduced when reusable implementation requires tests
+assets/         # introduced when durable diagrams / figures exist
 ```
 
-This is a logical organization convention; it does not require the
-ChatGPT Project interface to support folders.
+Do not create placeholder files merely to force empty directories into
+Git. Introduce a directory when its first real artifact is required.
 
-Do not introduce additional artifact layers until the research volume
-justifies them.
+Historical research chats do not need to be retroactively transformed
+into complete reports merely to populate the repository. A migration
+placeholder may reserve a durable artifact ID and provenance, but it must
+clearly state that detailed report migration is incomplete.
+
+The Research Map remains decision-oriented. Detailed evidence belongs in
+the corresponding research / experiment artifact.
 
 ------------------------------------------------------------------------
 
@@ -1527,7 +1561,366 @@ capable of changing the project decision.
 
 ------------------------------------------------------------------------
 
-## 20. Default Research Cycle
+## 20. GitHub Research Repository Integration
+
+The GitHub repository materializes the research workflow. It does not
+replace Research Chat reasoning or the Research Map.
+
+The repository operating model is:
+
+``` text
+Research Chat
+     ↓
+Formal Research Task
+     ↓
+GitHub Issue
+     ↓
+Git Task Branch
+     ↓
+Research / Experiment Artifact
+     +
+Code / Config / Evidence
+     ↓
+Pull Request
+     ↓
+main
+     ↓
+Canonical Repository State
+```
+
+### 20.1 Canonical State Ownership
+
+Avoid multiple competing sources of truth.
+
+Use the following ownership model:
+
+-   **Re-Aging_Research_Map.md** --- owns high-level technical
+    conclusions, candidate lifecycle, architecture direction, priorities,
+    and open problems.
+-   **Re-Aging_Research_Workflow.md** --- owns the research operating
+    process.
+-   **Detailed Research Artifact** --- owns supporting analysis,
+    provenance, evidence, and closeout detail for that research task.
+-   **Experiment `experiment.yaml`** --- owns detailed experiment
+    readiness / execution state, reproducibility metadata, and artifact
+    references for that experiment.
+-   **GitHub Issue** --- owns the operational task definition and current
+    work discussion.
+-   **GitHub Project** --- owns the operational portfolio view.
+-   **Pull Request** --- owns the auditable repository change record.
+-   **`main`** --- represents the current auditable repository state.
+
+If GitHub Project fields or an Issue summary disagree with a canonical
+artifact, the canonical artifact takes precedence and the operational
+tracking layer should be corrected.
+
+### 20.2 Research IDs vs GitHub Numbers
+
+Research artifact IDs are durable project identifiers and are independent
+from GitHub Issue / Pull Request numbers.
+
+Examples:
+
+``` text
+DA-004
+→ Deep Analysis artifact ID
+
+EXP-001
+→ Experiment artifact ID
+
+INFRA-001
+→ Infrastructure task ID
+
+#3
+→ GitHub Issue number
+```
+
+Do not replace a research artifact ID with a GitHub number.
+
+A GitHub Issue title should normally include the durable project ID when
+one exists:
+
+``` text
+[EXP-001] PuLID Re-Aging Stress Test
+```
+
+### 20.3 Chat Branch vs Git Task Branch
+
+The word `Branch` has two distinct meanings in this project:
+
+-   **Chat Branch** --- a temporary exploratory fork of conversational
+    context as defined in Section 3.
+-   **Git Task Branch** --- a repository branch used to implement one
+    formal research, experiment, implementation, architecture, or
+    infrastructure task.
+
+They are not equivalent and do not require one-to-one mapping.
+
+Preferred Git Task Branch patterns:
+
+``` text
+research/<task>
+experiment/<task>
+impl/<task>
+architecture/<task>
+infra/<task>
+```
+
+Avoid a long-lived `develop` branch unless future engineering scale
+creates a concrete need for one.
+
+### 20.4 Formal Task → GitHub Issue
+
+A GitHub Issue should be created when a task becomes formal enough that
+its scope, lifecycle, dependency, or output should be tracked outside the
+working chat.
+
+Typical examples:
+
+-   Deep Analysis
+-   Dataset Research
+-   Module Research
+-   Architecture work
+-   Experiment
+-   Implementation
+-   Evaluation
+-   Infrastructure
+
+Purely exploratory questions do not require an Issue.
+
+Issue Forms should capture the minimum information needed to avoid
+rediscovering why the task exists.
+
+For an Experiment, the Issue Form should preserve the Research-to-
+Experiment handoff defined in Section 19, including:
+
+-   source research
+-   research finding
+-   hypothesis
+-   objective
+-   independent variables
+-   dependent variables / metrics
+-   controlled variables
+-   inputs / dataset
+-   implementation requirement
+-   decision criteria
+-   known risks / confounders
+
+### 20.5 GitHub Project Role
+
+Use one top-level GitHub Project as the operational research control
+plane:
+
+``` text
+Re-Aging Research Program
+```
+
+The Project answers:
+
+> What are we doing, what is blocked, and where is each formal task in
+> its operational lifecycle?
+
+It does **not** answer:
+
+> What does the project technically believe?
+
+The latter remains the responsibility of the Research Map and durable
+research artifacts.
+
+Recommended operational fields include:
+
+-   Artifact ID
+-   Status
+-   Work Type
+-   Domain
+-   Priority
+-   Stage
+-   Research State
+-   Experiment State
+
+Keep the following concepts separate:
+
+``` text
+Status
+→ work execution state
+
+Research State
+→ candidate technology lifecycle
+
+Experiment State
+→ empirical experiment lifecycle
+```
+
+Example:
+
+``` text
+EXP-001
+
+Status
+→ Ready
+
+Experiment State
+→ DESIGNED
+```
+
+This means the task is ready to work on while the experiment itself has
+only reached the DESIGNED evidence state.
+
+GitHub Project state is an operational mirror. When a canonical
+Research State or Experiment State changes, update the Project field to
+match; do not treat the Project field alone as durable evidence.
+
+### 20.6 Auto-Add Convention
+
+Formal repository Issues should normally be auto-added to the
+`Re-Aging Research Program` Project.
+
+Pull Requests should normally remain outside the Project because they
+represent repository change records rather than independent research
+work units.
+
+Preferred distinction:
+
+``` text
+Issue
+→ Project work item
+
+Pull Request
+→ Change record
+```
+
+### 20.7 Protected `main` and Pull Request Policy
+
+`main` is the canonical auditable repository branch.
+
+Direct work should occur on a Git Task Branch and enter `main` through
+a Pull Request.
+
+Current baseline policy:
+
+-   require Pull Request before merging
+-   required human approvals may remain `0` while the project is
+    operated by a single researcher
+-   require review-thread resolution
+-   require linear history
+-   allow squash merge for canonical integration
+-   block force pushes
+-   block deletion of `main`
+-   do not require CI status checks until real automated checks exist
+
+Use Pull Requests as **research change records**, not merely code review
+objects.
+
+A research PR should make it possible to determine:
+
+-   what formal task caused the change
+-   what artifacts changed
+-   whether the Research Map changed
+-   whether an architecture decision changed
+-   whether reproducibility evidence was added
+-   which epistemic category applies to important claims
+
+Preferred merge mode:
+
+``` text
+Working Branch
+→ many local / iterative commits
+
+Squash Merge
+
+main
+→ one canonical task-level commit
+```
+
+### 20.8 Experiment Repository Synchronization
+
+For a formal Experiment, keep the following layers synchronized:
+
+``` text
+Experiment Issue
+→ operational task
+
+experiment.yaml
+→ detailed experiment state / reproducibility record
+
+Experiment outputs / closeout
+→ evidence
+
+Research Map
+→ durable project-level conclusion, only when promotion is warranted
+
+GitHub Project
+→ operational mirror
+```
+
+State transition rule:
+
+``` text
+Project field changes alone
+≠
+Experimental evidence
+```
+
+For example, moving an Experiment card to `EXECUTED` does not justify
+that state unless the experiment actually ran and its raw outputs were
+preserved.
+
+When an experiment transitions materially:
+
+1. update the experiment artifact
+2. update the operational Issue / Project mirror
+3. update the Research Map only if the promotion criteria in Section
+   19.7 are met
+
+### 20.9 Historical Artifact Migration
+
+Do not fabricate complete research reports for historical chats merely
+to make the repository look complete.
+
+A historical Deep Analysis may initially contain only:
+
+-   durable artifact ID
+-   topic
+-   source chat
+-   migration state
+-   relations to experiments / decisions
+
+Use an explicit marker such as:
+
+``` text
+artifact_state: migration-placeholder
+report_migrated: false
+```
+
+Detailed migration should occur only when the report itself has durable
+future value.
+
+### 20.10 Repository Infrastructure Changes
+
+Repository infrastructure changes should follow the same audit model as
+research changes:
+
+``` text
+Infrastructure Issue
+        ↓
+infra/<task> branch
+        ↓
+review
+        ↓
+Pull Request
+        ↓
+squash merge
+        ↓
+main
+```
+
+A repository infrastructure task should not be treated as a technical
+Re-Aging conclusion unless it actually changes research assumptions or
+architecture decisions.
+
+------------------------------------------------------------------------
+
+## 21. Default Research Cycle
 
 Unless the task requires another approach, use the following research
 cycle:
@@ -1538,6 +1931,9 @@ cycle:
 2. Discover Primary Sources
         ↓
 3. Initial Relevance Screening
+        ↓
+   If this becomes a formal durable task:
+   Create / update GitHub Issue + Project item
         ↓
 4. Paper / Architecture Analysis
         ↓
@@ -1573,7 +1969,7 @@ proportional to the importance of the technology being investigated.
 
 ------------------------------------------------------------------------
 
-## 21. Guiding Principle
+## 22. Guiding Principle
 
 The purpose of context management is not to create perfect
 documentation.
