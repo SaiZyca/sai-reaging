@@ -3,9 +3,9 @@
 # reproducibility/Windows compatibility pins.
 #
 # torch/torchvision are installed separately by setup_windows_envs.ps1
-# from the official CUDA 11.8 wheel index.
-torch==2.0.1+cu118
-torchvision==0.15.2+cu118
+# from the official CUDA 12.8 wheel index.
+torch==2.7.1+cu128
+torchvision==0.22.1+cu128
 numpy<2
 diffusers==0.25.0
 transformers==4.43.3
