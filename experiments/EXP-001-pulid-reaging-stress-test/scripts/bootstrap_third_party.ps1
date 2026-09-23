@@ -70,15 +70,64 @@ function Apply-PuLIDReproducibilityInstrumentation {
 
     $Text = [System.IO.File]::ReadAllText($Pipeline)
     $Text = $Text.Replace("`r`n", "`n")
+    if (-not $Text.StartsWith("import gc`n")) {
+        throw "PuLID instrumentation anchor missing: import gc"
+    }
+    $Text = $Text.Replace("import gc`n", "import gc`nimport os`n", 1)
 
-    $OldAntelope = "        snapshot_download('DIAMONIK7777/antelopev2', local_dir='models/antelopev2')"
+    $OldAntelope = @(
+        "        snapshot_download('DIAMONIK7777/antelopev2', local_dir='models/antelopev2')"
+        "        providers = ['CPUExecutionProvider'] if onnx_provider == 'cpu' \"
+        "            else ['CUDAExecutionProvider', 'CPUExecutionProvider']"
+        "        self.app = FaceAnalysis(name='antelopev2', root='.', providers=providers)"
+        "        self.app.prepare(ctx_id=0, det_size=(640, 640))"
+        "        self.handler_ante = insightface.model_zoo.get_model('models/antelopev2/glintr100.onnx',"
+        "                                                            providers=providers)"
+    ) -join "`n"
     $NewAntelope = @(
+        "        antelope_root = os.getenv('EXP001_ANTELOPE_ROOT', '.')"
+        "        antelope_dir = os.path.join(antelope_root, 'models', 'antelopev2')"
         "        snapshot_download("
         "            'DIAMONIK7777/antelopev2',"
         "            revision='ba0c3e10f4548361eb9a63265d87ce1140ab5a05',"
-        "            local_dir='models/antelopev2',"
+        "            local_dir=antelope_dir,"
+        "            local_files_only=bool(os.getenv('EXP001_OFFLINE_ASSETS')),"
+        "        )"
+        "        providers = ['CPUExecutionProvider'] if onnx_provider == 'cpu' \"
+        "            else ['CUDAExecutionProvider', 'CPUExecutionProvider']"
+        "        self.app = FaceAnalysis(name='antelopev2', root=antelope_root, providers=providers)"
+        "        self.app.prepare(ctx_id=0, det_size=(640, 640))"
+        "        self.handler_ante = insightface.model_zoo.get_model(os.path.join(antelope_dir, 'glintr100.onnx'),"
+        "                                                            providers=providers)"
+    ) -join "`n"
+
+    $OldFaceHelper = @(
+        "        self.face_helper = FaceRestoreHelper("
+        "            upscale_factor=1,"
+        "            face_size=512,"
+        "            crop_ratio=(1, 1),"
+        "            det_model='retinaface_resnet50',"
+        "            save_ext='png',"
+        "            device=self.device,"
         "        )"
     ) -join "`n"
+    $NewFaceHelper = @(
+        "        self.face_helper = FaceRestoreHelper("
+        "            upscale_factor=1,"
+        "            face_size=512,"
+        "            crop_ratio=(1, 1),"
+        "            det_model='retinaface_resnet50',"
+        "            save_ext='png',"
+        "            device=self.device,"
+        "            model_rootpath=os.getenv('EXP001_FACEXLIB_WEIGHTS'),"
+        "        )"
+    ) -join "`n"
+
+    $OldParsing = "        self.face_helper.face_parse = init_parsing_model(model_name='bisenet', device=self.device)"
+    $NewParsing = "        self.face_helper.face_parse = init_parsing_model(model_name='bisenet', device=self.device, model_rootpath=os.getenv('EXP001_FACEXLIB_WEIGHTS'))"
+
+    $OldEva = "        model, _, _ = create_model_and_transforms('EVA02-CLIP-L-14-336', 'eva_clip', force_custom_clip=True)"
+    $NewEva = "        model, _, _ = create_model_and_transforms('EVA02-CLIP-L-14-336', os.getenv('EXP001_EVA_CLIP_PATH', 'eva_clip'), force_custom_clip=True)"
 
     $OldPretrain = @(
         "        hf_hub_download('guozinan/PuLID', f'pulid_flux_{version}.safetensors', local_dir='models')"
@@ -97,13 +146,25 @@ function Apply-PuLIDReproducibilityInstrumentation {
     ) -join "`n"
 
     if (-not $Text.Contains($OldAntelope)) {
-        throw "PuLID instrumentation anchor missing: AntelopeV2 download statement. Upstream content does not match the pinned contract."
+        throw "PuLID instrumentation anchor missing: AntelopeV2 block. Upstream content does not match the pinned contract."
+    }
+    if (-not $Text.Contains($OldFaceHelper)) {
+        throw "PuLID instrumentation anchor missing: FaceRestoreHelper block."
+    }
+    if (-not $Text.Contains($OldParsing)) {
+        throw "PuLID instrumentation anchor missing: BiSeNet parser block."
+    }
+    if (-not $Text.Contains($OldEva)) {
+        throw "PuLID instrumentation anchor missing: EVA-CLIP block."
     }
     if (-not $Text.Contains($OldPretrain)) {
         throw "PuLID instrumentation anchor missing: load_pretrain block. Upstream content does not match the pinned contract."
     }
 
     $Text = $Text.Replace($OldAntelope, $NewAntelope)
+    $Text = $Text.Replace($OldFaceHelper, $NewFaceHelper)
+    $Text = $Text.Replace($OldParsing, $NewParsing)
+    $Text = $Text.Replace($OldEva, $NewEva)
     $Text = $Text.Replace($OldPretrain, $NewPretrain)
 
     $Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
@@ -115,6 +176,15 @@ function Apply-PuLIDReproducibilityInstrumentation {
     }
     if (-not $Written.Contains("        if pretrain_path is None:")) {
         throw "PuLID instrumentation verification failed: local checkpoint guard missing."
+    }
+    if (-not $Written.Contains("EXP001_FACEXLIB_WEIGHTS")) {
+        throw "PuLID instrumentation verification failed: FaceXLib local asset marker missing."
+    }
+    if (-not $Written.Contains("EXP001_EVA_CLIP_PATH")) {
+        throw "PuLID instrumentation verification failed: EVA-CLIP local asset marker missing."
+    }
+    if (-not $Written.Contains("EXP001_ANTELOPE_ROOT")) {
+        throw "PuLID instrumentation verification failed: Antelope local asset marker missing."
     }
 
     Invoke-Git -GitArgs @("-C", $PulidDir, "diff", "--check")
