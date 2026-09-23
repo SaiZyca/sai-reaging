@@ -1,6 +1,6 @@
 # Re-Aging Research Workflow
 
-**Version:** 1.5\
+**Version:** 1.6\
 **Project:** Sai_研究_Re-Aging\
 **Purpose:** Define how research chats, research state, context
 boundaries, GitHub research artifacts, experiments, and the
@@ -33,8 +33,10 @@ Next Research Question
 
 The main information layers have different responsibilities:
 
--   **Project Instructions** --- define how the AI should research and
-    reason.
+-   **Project Instructions** --- define the high-level AI research contract.
+    The canonical persisted specification is
+    `governance/Project_Instructions.md`; the ChatGPT Project Instructions
+    UI is its deployed runtime copy.
 -   **Research Chat** --- working context for investigation, discussion,
     comparison, and technical reasoning.
 -   **GitHub Research Repository** --- versioned research artifacts,
@@ -1594,6 +1596,9 @@ Avoid multiple competing sources of truth.
 
 Use the following ownership model:
 
+-   **governance/Project_Instructions.md** --- owns the canonical persisted
+    AI research behavior / high-level research contract. The ChatGPT
+    Project Instructions UI is the deployed runtime copy.
 -   **Re-Aging_Research_Map.md** --- owns high-level technical
     conclusions, candidate lifecycle, architecture direction, priorities,
     and open problems.
@@ -1917,6 +1922,53 @@ main
 A repository infrastructure task should not be treated as a technical
 Re-Aging conclusion unless it actually changes research assumptions or
 architecture decisions.
+
+
+### 20.11 Project Instructions Versioning
+
+Project Instructions are part of the research governance layer and should
+be version-controlled because changes to AI research behavior can affect
+how evidence is collected, interpreted, and promoted.
+
+Use:
+
+``` text
+governance/Project_Instructions.md
+→ Canonical persisted specification
+
+ChatGPT Project Instructions UI
+→ Deployed runtime copy
+```
+
+The repository version should remain below the current ChatGPT Project
+Instructions character limit so the same payload can be deployed without
+silent truncation.
+
+Preferred change flow:
+
+``` text
+Governance change required
+        ↓
+Infrastructure Issue
+        ↓
+infra/<task> branch
+        ↓
+Pull Request / review
+        ↓
+squash merge to main
+        ↓
+Update ChatGPT Project Instructions
+        ↓
+Confirm deployed copy matches the repository specification
+```
+
+If the ChatGPT deployed copy and the repository specification differ,
+treat this as configuration drift. Reconcile it explicitly rather than
+allowing the two versions to evolve independently.
+
+Minor typo-only edits may rely on Git history without a semantic version
+bump. Changes to durable research behavior, evidence policy, or governance
+should increment the Project Instructions version.
 
 ------------------------------------------------------------------------
 
