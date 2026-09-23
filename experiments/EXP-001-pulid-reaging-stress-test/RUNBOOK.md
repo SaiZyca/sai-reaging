@@ -157,68 +157,139 @@ Create the license-safe repository lock:
 The generated lock contains no per-subject AgeDB annotations and may be
 committed.
 
-## 6. Materialize model assets
+## 6. Checkpoint Gate — access and automatic materialization
 
-A convenient ignored local directory is:
-
-```powershell
-New-Item -ItemType Directory -Force .\checkpoints\EXP-001
-```
-
-Required generation assets:
+The checkpoint gate uses an ignored local root:
 
 ```text
-pulid_flux_v0.9.1.safetensors
-flux1-dev.safetensors
-ae.safetensors
+checkpoints\EXP-001\
 ```
 
-Expected PuLID-FLUX-v0.9.1 SHA256:
+First open the gated FLUX page and the three official Google Drive evaluator
+checkpoint pages:
+
+```powershell
+.\experiments\EXP-001-pulid-reaging-stress-test\scripts\open_checkpoint_access_pages.ps1
+```
+
+For FLUX.1-dev:
+
+1. Sign in to Hugging Face using the account intended for this experiment.
+2. Accept the `black-forest-labs/FLUX.1-dev` access conditions.
+3. Authenticate the generation environment without putting a token in the
+   command line:
+
+```powershell
+& .\.venv-exp001-generation\Scripts\huggingface-cli.exe login
+```
+
+Confirm the authenticated account:
+
+```powershell
+& .\.venv-exp001-generation\Scripts\python.exe -c "from huggingface_hub import whoami; print(whoami()['name'])"
+```
+
+Then materialize all Hugging Face / GitHub-hosted assets:
+
+```powershell
+& .\.venv-exp001-generation\Scripts\python.exe .\experiments\EXP-001-pulid-reaging-stress-test\scripts\materialize_checkpoint_assets.py --asset-root .\checkpoints\EXP-001
+```
+
+The script resolves the current repository SHA **before** each Hugging Face
+download and downloads at that exact revision. It automatically materializes:
+
+- PuLID-FLUX-v0.9.1
+- FLUX.1-dev
+- FLUX autoencoder
+- `xlabs-ai/xflux_text_encoders` T5 snapshot
+- `openai/clip-vit-large-patch14` CLIP snapshot
+- EVA02-CLIP-L-14-336 visual identity checkpoint
+- AntelopeV2 at the pinned revision
+- FaceXLib RetinaFace
+- FaceXLib BiSeNet
+- FaceXLib ParseNet
+
+A local, ignored record is written to:
+
+```text
+checkpoints\EXP-001\checkpoint_manifest.local.yaml
+```
+
+Do not commit this local manifest because it contains absolute local paths.
+
+The expected PuLID-FLUX-v0.9.1 SHA256 is:
 
 ```text
 92c41c3af322b02e58e1b32842e4601e08c8f16ec1fe80089dbe957df510f51d
 ```
 
-FLUX.1-dev is gated. Accept its terms using your own Hugging Face account
-before downloading the model.
+AntelopeV2 `glintr100.onnx` is also verified against the canonical hash
+recorded in `experiment.yaml`.
 
-Identity evaluator:
+FLUX.1-dev is gated and uses the FLUX.1-dev non-commercial license. Phase A is
+therefore a research experiment; success does not establish commercial
+production clearance.
+
+## 7. Checkpoint Gate — manual evaluator assets and verification
+
+Download the three evaluator files from the official pages opened in Step 6
+and save them with these exact local names:
 
 ```text
-adaface_ir101_webface12m.ckpt
-Google Drive id: 1dswnavflETcnAuplZj1IOKKP0eM8ITgT
+checkpoints\EXP-001\evaluators\adaface_ir101_webface12m.ckpt
+checkpoints\EXP-001\evaluators\mivolo_face_only_imdb_cleaned_age_gender.pth.tar
+checkpoints\EXP-001\evaluators\yolov8x_person_face.pt
 ```
 
-Age evaluator:
+Official sources:
 
 ```text
-MiVOLO face-only age+gender checkpoint
+AdaFace R100 WebFace12M
+Google Drive id: 1dswnavflETcnAuplZj1IOKKP0eM8ITgT
+
+MiVOLO VOLO-D1 face-only age+gender / IMDB-cleaned
 Google Drive id: 1NlsNEVijX2tjMe8LBb1rI56WB_ADVHeP
 
-yolov8x_person_face.pt
+MiVOLO face/person detector
 Google Drive id: 1CGNCkZQNj5WkP3rLpENWAOgrBQkUWRdw
 ```
 
-Calculate SHA256 on Windows:
+Do not rename arbitrary checkpoints into these filenames. The file must come
+from the corresponding upstream link above.
+
+After all automatic and manual assets are present, run:
 
 ```powershell
-(Get-FileHash "<FILE_PATH>" -Algorithm SHA256).Hash.ToLower()
+& .\.venv-exp001-generation\Scripts\python.exe .\experiments\EXP-001-pulid-reaging-stress-test\scripts\verify_checkpoint_assets.py --asset-root .\checkpoints\EXP-001
 ```
 
-Record the hashes in `experiment.yaml` before promotion to
-`EXECUTABLE`.
-
-## 7. Record text-encoder snapshots
-
-PuLID's FLUX stack also loads:
+A successful verification writes the Git-safe lock:
 
 ```text
-xlabs-ai/xflux_text_encoders
-openai/clip-vit-large-patch14
+experiments\EXP-001-pulid-reaging-stress-test\checkpoint_manifest.lock.yaml
 ```
 
-Record the exact Hugging Face snapshot / commit revisions actually cached and
-used by the smoke test. Do not leave these as an implicit moving main revision.
+The lock contains:
+
+- exact Hugging Face repository revisions
+- SHA256 + size for direct checkpoint files
+- aggregate tree digests for T5 / CLIP local snapshots
+- evaluator checkpoint hashes
+- FaceXLib / EVA / Antelope auxiliary hashes
+
+The actual checkpoint bytes remain under ignored `checkpoints/EXP-001/` and
+must never be committed.
+
+Before using the assets for generation, rerun the third-party bootstrap after
+pulling the checkpoint-gate implementation:
+
+```powershell
+.\experiments\EXP-001-pulid-reaging-stress-test\scripts\bootstrap_third_party.ps1
+```
+
+This applies the reproducibility-only local-asset instrumentation so PuLID uses
+the materialized EVA-CLIP / FaceXLib / Antelope assets rather than performing
+implicit first-run downloads.
 
 ## 8. One-source generation smoke test
 
@@ -227,7 +298,7 @@ Pick one `sample_id` from the private manifest.
 Run with the generation environment:
 
 ```powershell
-& .\.venv-exp001-generation\Scripts\python.exe .\experiments\EXP-001-pulid-reaging-stress-test\scripts\run_phase_a.py --config .\experiments\EXP-001-pulid-reaging-stress-test\configs\phase_a.yaml --manifest .\data\private\EXP-001\dataset_manifest.csv --dataset-root "<AGEDB_ROOT>" --pulid-repo .\third_party\PuLID --pulid-checkpoint "<PULID_CHECKPOINT>" --flux-checkpoint "<FLUX_CHECKPOINT>" --ae-checkpoint "<AE_CHECKPOINT>" --output-dir .\experiments\EXP-001-pulid-reaging-stress-test\outputs\raw --sample-id "<SAMPLE_ID>" --age-delta 30 --id-weight 1.0 --start-step 4 --seed 17
+& .\.venv-exp001-generation\Scripts\python.exe .\experiments\EXP-001-pulid-reaging-stress-test\scripts\run_phase_a.py --config .\experiments\EXP-001-pulid-reaging-stress-test\configs\phase_a.yaml --manifest .\data\private\EXP-001\dataset_manifest.csv --dataset-root "<AGEDB_ROOT>" --pulid-repo .\third_party\PuLID --pulid-checkpoint .\checkpoints\EXP-001\generation\pulid_flux_v0.9.1.safetensors --flux-checkpoint .\checkpoints\EXP-001\generation\flux1-dev.safetensors --ae-checkpoint .\checkpoints\EXP-001\generation\ae.safetensors --t5-snapshot .\checkpoints\EXP-001\text_encoders\xflux_text_encoders --clip-snapshot .\checkpoints\EXP-001\text_encoders\openai_clip_vit_large_patch14 --eva-clip-checkpoint .\checkpoints\EXP-001\pulid_aux\eva_clip\EVA02_CLIP_L_336_psz14_s6B.pt --facexlib-weights .\checkpoints\EXP-001\pulid_aux\facexlib --antelope-root .\checkpoints\EXP-001\pulid_aux\antelope --output-dir .\experiments\EXP-001-pulid-reaging-stress-test\outputs\raw --sample-id "<SAMPLE_ID>" --age-delta 30 --id-weight 1.0 --start-step 4 --seed 17
 ```
 
 This produces the matched no-PuLID baseline and selected PuLID condition.
