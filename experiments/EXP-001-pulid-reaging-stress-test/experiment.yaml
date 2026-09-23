@@ -151,7 +151,8 @@ implementation:
 
   environment_strategy:
     isolation: "stage-specific"
-    os: "Linux x86_64"
+    primary_execution_os: "Windows 10/11 x86_64"
+    shell: "PowerShell"
     python: "3.10"
     rationale: >
       PuLID generation pins PyTorch 2.0.1 while the official AdaFace repository
@@ -189,11 +190,18 @@ implementation:
           required_at: EXECUTABLE
           target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/analysis.lock.txt"
         accelerator: "CPU sufficient"
+    windows_setup:
+      bootstrap_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/bootstrap_third_party.ps1"
+      environment_setup_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/setup_windows_envs.ps1"
+      environment_capture_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/capture_windows_environment.ps1"
+      pytorch_generation_age: "torch 2.0.1 / torchvision 0.15.2 / CUDA 11.8 wheel"
+      pytorch_identity: "torch 1.13.1 / torchvision 0.14.1 / CUDA 11.7 wheel"
     environment_capture:
       required_at: EXECUTABLE
       requirements:
         - "pip freeze --all for each stage"
         - "pip check for each stage"
+        - "Windows version / architecture"
         - "Python version"
         - "PyTorch / CUDA version where applicable"
         - "nvidia-smi / observed hardware"
@@ -217,8 +225,14 @@ implementation:
         role: "Join evaluator outputs and compute matched-baseline metrics."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/annotate_failures.py"
         role: "Create the predefined manual failure-annotation sheet."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/bootstrap_third_party.ps1"
+        role: "Primary Windows PowerShell bootstrap for pinned third-party repositories."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/setup_windows_envs.ps1"
+        role: "Create the four isolated Windows Python environments."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/capture_windows_environment.ps1"
+        role: "Capture Windows, GPU, Python, PyTorch, and resolved environment records."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/bootstrap_third_party.sh"
-        role: "Clone and checkout the pinned third-party repository revisions."
+        role: "Secondary Bash bootstrap retained for non-Windows environments."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/lock_private_manifest.py"
         role: "Create a license-safe hash/aggregate lock for the private AgeDB manifest."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/patches/pulid_reproducibility.patch"
