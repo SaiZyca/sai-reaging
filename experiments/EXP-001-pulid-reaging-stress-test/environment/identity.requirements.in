@@ -1,8 +1,8 @@
 # EXP-001 identity-evaluation environment
 # Minimal inference-only AdaFace environment. The official AdaFace repository
-# constrains PyTorch <=1.13.1; keep this isolated from PuLID generation.
-torch==1.13.1
-torchvision==0.14.1
+# historical AdaFace requirements constrain PyTorch <=1.13.1, but RTX 5080 / sm_120 requires a Blackwell-capable runtime. The model/checkpoint remain unchanged.
+torch==2.7.1+cu128
+torchvision==0.22.1+cu128
 numpy<2
 Pillow
 opencv-python

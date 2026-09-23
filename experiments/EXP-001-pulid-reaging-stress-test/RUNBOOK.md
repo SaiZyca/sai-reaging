@@ -66,8 +66,11 @@ This creates:
 .venv-exp001-analysis
 ```
 
-The environments remain isolated because PuLID and AdaFace require different
-PyTorch generations.
+The environments remain isolated to prevent transitive dependency drift.
+On the observed RTX 5080 / Blackwell sm_120 machine, all three CUDA stages use
+PyTorch 2.7.1 + torchvision 0.22.1 + CUDA 12.8 wheels. This replaces the
+historical upstream Torch versions only at the runtime layer; model
+architectures and checkpoints remain unchanged.
 
 ## 3. Verify and capture Windows environments
 
@@ -79,9 +82,12 @@ Run the import / CUDA verification:
 
 This verifies:
 
-- generation: CUDA + PuLID core imports
-- identity: CUDA + AdaFace IR-101 construction
-- age: CUDA + MiVOLO core imports
+- CUDA is available
+- the installed PyTorch binary explicitly contains sm_120 / compute_120 support
+- a real CUDA tensor kernel executes and synchronizes
+- generation: PuLID core imports
+- identity: AdaFace IR-101 construction
+- age: MiVOLO core imports
 - analysis: NumPy / pandas / pyarrow imports
 
 If it passes, capture the resolved environment locks and observed machine state:

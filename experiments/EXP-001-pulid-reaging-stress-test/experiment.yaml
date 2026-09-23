@@ -160,10 +160,16 @@ implementation:
     shell: "PowerShell"
     python: "3.10"
     rationale: >
-      PuLID generation pins PyTorch 2.0.1 while the official AdaFace repository
-      constrains PyTorch to <=1.13.1. Generation, identity evaluation, age
-      evaluation, and metric aggregation therefore use isolated environments so
-      evaluator dependencies cannot silently change the generation baseline.
+      Upstream 2024 repositories were developed against older PyTorch stacks,
+      but the observed execution GPU is NVIDIA GeForce RTX 5080 / Blackwell
+      sm_120. PyTorch 2.0.1+cu118 and 1.13.1+cu117 detect the device but do not
+      contain sm_120 kernels and therefore cannot execute CUDA operations.
+      The Windows GPU stages use PyTorch 2.7.1+cu128, the earliest stable
+      Blackwell-support generation with a patch release, while preserving the
+      upstream model architectures, checkpoints, and experiment controls.
+      Generation, identity evaluation, age evaluation, and metric aggregation
+      remain isolated so evaluator dependencies cannot silently change the
+      generation baseline.
     stages:
       generation:
         requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/generation.requirements.in"
@@ -171,7 +177,7 @@ implementation:
           value: null
           required_at: EXECUTABLE
           target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/generation.lock.txt"
-        framework: "PyTorch 2.0.1 / torchvision 0.15.2"
+        framework: "PyTorch 2.7.1+cu128 / torchvision 0.22.1+cu128"
         precision: "bf16"
         fp8: false
       identity_evaluation:
@@ -180,14 +186,14 @@ implementation:
           value: null
           required_at: EXECUTABLE
           target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/identity.lock.txt"
-        framework: "PyTorch 1.13.1 / torchvision 0.14.1"
+        framework: "PyTorch 2.7.1+cu128 / torchvision 0.22.1+cu128"
       age_evaluation:
         requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/age.requirements.in"
         resolved_lock:
           value: null
           required_at: EXECUTABLE
           target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/age.lock.txt"
-        framework: "PyTorch 2.0.1 / torchvision 0.15.2"
+        framework: "PyTorch 2.7.1+cu128 / torchvision 0.22.1+cu128"
       analysis:
         requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/analysis.requirements.in"
         resolved_lock:
@@ -200,8 +206,8 @@ implementation:
       environment_setup_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/setup_windows_envs.ps1"
       environment_verification_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/verify_windows_envs.ps1"
       environment_capture_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/capture_windows_environment.ps1"
-      pytorch_generation_age: "torch 2.0.1 / torchvision 0.15.2 / CUDA 11.8 wheel"
-      pytorch_identity: "torch 1.13.1 / torchvision 0.14.1 / CUDA 11.7 wheel"
+      pytorch_generation_age: "torch 2.7.1 / torchvision 0.22.1 / CUDA 12.8 wheel"
+      pytorch_identity: "torch 2.7.1 / torchvision 0.22.1 / CUDA 12.8 wheel"
     environment_capture:
       required_at: EXECUTABLE
       requirements:
