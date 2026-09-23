@@ -54,7 +54,7 @@ Write-Host "Checking Python 3.10..."
 Invoke-Checked -Exe $PythonLauncher -CommandArgs @("-3.10", "--version")
 
 $GenPython = New-Python310Venv ".venv-exp001-generation"
-Invoke-Checked -Exe $GenPython -CommandArgs @("-m", "pip", "install", "torch==2.0.1", "torchvision==0.15.2", "--index-url", "https://download.pytorch.org/whl/cu118")
+Invoke-Checked -Exe $GenPython -CommandArgs @("-m", "pip", "install", "torch==2.0.1+cu118", "torchvision==0.15.2+cu118", "--extra-index-url", "https://download.pytorch.org/whl/cu118")
 Install-NonTorchRequirements -PythonExe $GenPython -InputFile (Join-Path $EnvDir "generation.requirements.in")
 
 $IdPython = New-Python310Venv ".venv-exp001-identity"
@@ -62,7 +62,7 @@ Invoke-Checked -Exe $IdPython -CommandArgs @("-m", "pip", "install", "torch==1.1
 Install-NonTorchRequirements -PythonExe $IdPython -InputFile (Join-Path $EnvDir "identity.requirements.in")
 
 $AgePython = New-Python310Venv ".venv-exp001-age"
-Invoke-Checked -Exe $AgePython -CommandArgs @("-m", "pip", "install", "torch==2.0.1", "torchvision==0.15.2", "--index-url", "https://download.pytorch.org/whl/cu118")
+Invoke-Checked -Exe $AgePython -CommandArgs @("-m", "pip", "install", "torch==2.0.1+cu118", "torchvision==0.15.2+cu118", "--extra-index-url", "https://download.pytorch.org/whl/cu118")
 Install-NonTorchRequirements -PythonExe $AgePython -InputFile (Join-Path $EnvDir "age.requirements.in")
 
 $AnalysisPython = New-Python310Venv ".venv-exp001-analysis"
