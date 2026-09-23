@@ -1,0 +1,24 @@
+schema_version: "0.1"
+
+repositories:
+  - id: pulid
+    role: "EXP-001 generation upstream"
+    repository: "https://github.com/ToTheBeginning/PuLID"
+    commit: "a66a6a1901729897fa1dc11d10397943caf15470"
+    experiment_refs:
+      - EXP-001
+    note: "PuLID-FLUX-v0.9.1 release commit"
+
+  - id: adaface
+    role: "EXP-001 primary independent identity evaluator"
+    repository: "https://github.com/mk-minchul/AdaFace"
+    commit: "c60eaa786a42c03444f3df7096dbaf9d57ae010d"
+    experiment_refs:
+      - EXP-001
+
+  - id: mivolo
+    role: "EXP-001 primary age evaluator"
+    repository: "https://github.com/WildChlamydia/MiVOLO"
+    commit: "37475e3f8818b5f22448003feec3e64b01bfb188"
+    experiment_refs:
+      - EXP-001
