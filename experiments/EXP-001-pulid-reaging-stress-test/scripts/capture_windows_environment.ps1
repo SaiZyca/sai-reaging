@@ -13,6 +13,13 @@ if ([string]::IsNullOrWhiteSpace($OutputDir)) {
 }
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
+$VerifyScript = Join-Path $Root "experiments\EXP-001-pulid-reaging-stress-test\scripts\verify_windows_envs.ps1"
+if (-not (Test-Path $VerifyScript)) {
+    throw "Missing verification script: $VerifyScript"
+}
+$VerificationOutput = & $VerifyScript 2>&1
+$VerificationOutput | Set-Content -Encoding UTF8 (Join-Path $OutputDir "environment-verification.txt")
+
 $Envs = @{
     "generation" = (Join-Path $Root ".venv-exp001-generation\Scripts\python.exe")
     "identity"   = (Join-Path $Root ".venv-exp001-identity\Scripts\python.exe")
@@ -35,8 +42,15 @@ foreach ($Name in $Envs.Keys) {
     }
 }
 
-Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsArchitecture | Format-List | Out-String | Set-Content -Encoding UTF8 (Join-Path $OutputDir "windows.txt")
-nvidia-smi 2>&1 | Set-Content -Encoding UTF8 (Join-Path $OutputDir "nvidia-smi.txt")
+Get-ComputerInfo |
+    Select-Object WindowsProductName, WindowsVersion, OsArchitecture |
+    Format-List |
+    Out-String |
+    Set-Content -Encoding UTF8 (Join-Path $OutputDir "windows.txt")
 
+nvidia-smi --query-gpu=name,driver_version,memory.total,compute_cap --format=csv,noheader |
+    Set-Content -Encoding UTF8 (Join-Path $OutputDir "nvidia-smi.txt")
+
+Write-Host "Captured environment verification under $OutputDir"
 Write-Host "Captured resolved locks under $EnvRecordDir"
 Write-Host "Captured observed machine state under $OutputDir"
