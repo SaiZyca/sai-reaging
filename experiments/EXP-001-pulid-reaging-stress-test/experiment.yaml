@@ -8,7 +8,7 @@ source_research:
   artifacts:
     - DA-004
   source_chat: "Deep Analysis 04 — PuLID"
-  source_issue: null
+  source_issue: 3
 
 research_finding: >
   PuLID is a strong identity-conditioning architecture candidate for Stage A,
