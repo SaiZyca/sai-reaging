@@ -43,6 +43,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--output-dir", required=True, type=Path)
     p.add_argument("--raw-manifest", type=Path, default=None)
     p.add_argument("--sample-id", default=None)
+    p.add_argument("--seed", type=int, action="append", default=None)
+    p.add_argument("--age-delta", type=int, action="append", default=None)
+    p.add_argument("--id-weight", type=float, action="append", default=None)
+    p.add_argument("--start-step", type=int, action="append", default=None)
+    p.add_argument("--treatment", choices=["no_pulid", "pulid"], default=None)
     p.add_argument("--max-runs", type=int, default=None)
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--overwrite", action="store_true")
@@ -58,6 +63,18 @@ def main() -> None:
 
     expected_repo = experiment["implementation"]["upstream_commit"]
     assert_git_revision(args.pulid_repo, expected_repo, "PuLID")
+    pipeline_text = (args.pulid_repo / "pulid" / "pipeline_flux.py").read_text(
+        encoding="utf-8"
+    )
+    required_markers = [
+        "ba0c3e10f4548361eb9a63265d87ce1140ab5a05",
+        "if pretrain_path is None:",
+    ]
+    if not all(marker in pipeline_text for marker in required_markers):
+        raise RuntimeError(
+            "PuLID reproducibility patch is not applied. "
+            "Run scripts/bootstrap_third_party.sh before generation."
+        )
     expected_pulid_sha = experiment["implementation"]["model_assets"]["pulid"]["sha256"]
     args.pulid_checkpoint = args.pulid_checkpoint.resolve()
     args.flux_checkpoint = args.flux_checkpoint.resolve()
@@ -88,7 +105,28 @@ def main() -> None:
     completed = {r["run_id"] for r in read_jsonl(raw_manifest)}
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    planned = list(iter_planned_runs(config, rows, args.sample_id))
+    planned = list(
+        iter_planned_runs(
+            config,
+            rows,
+            args.sample_id,
+            seeds_override=args.seed,
+        )
+    )
+
+    def keep(item):
+        if args.age_delta is not None and item["requested_age_delta"] not in args.age_delta:
+            return False
+        if args.treatment is not None and item["treatment"] != args.treatment:
+            return False
+        if item["treatment"] == "pulid":
+            if args.id_weight is not None and item["id_weight"] not in args.id_weight:
+                return False
+            if args.start_step is not None and item["start_step"] not in args.start_step:
+                return False
+        return True
+
+    planned = [item for item in planned if keep(item)]
     if args.max_runs is not None:
         planned = planned[: args.max_runs]
 
