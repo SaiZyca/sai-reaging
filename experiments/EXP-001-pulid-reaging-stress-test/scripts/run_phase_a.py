@@ -57,6 +57,14 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    args.config = args.config.resolve()
+    args.manifest = args.manifest.resolve()
+    args.dataset_root = args.dataset_root.resolve()
+    args.pulid_repo = args.pulid_repo.resolve()
+    args.output_dir = args.output_dir.resolve()
+    if args.raw_manifest is not None:
+        args.raw_manifest = args.raw_manifest.resolve()
+
     config = load_yaml(args.config)
     experiment_path = args.config.parent.parent / "experiment.yaml"
     experiment = load_yaml(experiment_path)
