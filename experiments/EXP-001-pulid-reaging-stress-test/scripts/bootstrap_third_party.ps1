@@ -106,7 +106,7 @@ function Apply-PuLIDReproducibilityInstrumentation {
     $Text = $Text.Replace($OldAntelope, $NewAntelope)
     $Text = $Text.Replace($OldPretrain, $NewPretrain)
 
-    $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    $Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
     [System.IO.File]::WriteAllText($Pipeline, $Text, $Utf8NoBom)
 
     $Written = [System.IO.File]::ReadAllText($Pipeline)
