@@ -92,6 +92,7 @@ Then create the license-safe repository lock:
 ```bash
 python experiments/EXP-001-pulid-reaging-stress-test/scripts/lock_private_manifest.py \
   --manifest data/private/EXP-001/dataset_manifest.csv \
+  --dataset-root <AGEDB_ROOT> \
   --output experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.yaml
 ```
 
