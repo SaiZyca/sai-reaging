@@ -69,7 +69,32 @@ This creates:
 The environments remain isolated because PuLID and AdaFace require different
 PyTorch generations.
 
-## 3. Acquire AgeDB
+## 3. Verify and capture Windows environments
+
+Run the import / CUDA verification:
+
+```powershell
+.\experiments\EXP-001-pulid-reaging-stress-test\scripts\verify_windows_envs.ps1
+```
+
+This verifies:
+
+- generation: CUDA + PuLID core imports
+- identity: CUDA + AdaFace IR-101 construction
+- age: CUDA + MiVOLO core imports
+- analysis: NumPy / pandas / pyarrow imports
+
+If it passes, capture the resolved environment locks and observed machine state:
+
+```powershell
+.\experiments\EXP-001-pulid-reaging-stress-test\scripts\capture_windows_environment.ps1
+```
+
+The four resolved lock files are written to the canonical experiment
+`environment\*.lock.txt` paths. Observed Windows / GPU / Python / Torch
+information is written under `environment\observed\`.
+
+## 4. Acquire AgeDB
 
 Use the official AgeDB page:
 
@@ -84,7 +109,7 @@ directory.
 The official page provides the database download and instructs researchers to
 request the zip password from the listed iBUG contact.
 
-## 4. Materialize the private 8-source manifest
+## 5. Materialize the private 8-source manifest
 
 Create:
 
@@ -126,7 +151,7 @@ Create the license-safe repository lock:
 The generated lock contains no per-subject AgeDB annotations and may be
 committed.
 
-## 5. Materialize model assets
+## 6. Materialize model assets
 
 A convenient ignored local directory is:
 
@@ -177,7 +202,7 @@ Calculate SHA256 on Windows:
 Record the hashes in `experiment.yaml` before promotion to
 `EXECUTABLE`.
 
-## 6. Record text-encoder snapshots
+## 7. Record text-encoder snapshots
 
 PuLID's FLUX stack also loads:
 
@@ -189,7 +214,7 @@ openai/clip-vit-large-patch14
 Record the exact Hugging Face snapshot / commit revisions actually cached and
 used by the smoke test. Do not leave these as an implicit moving main revision.
 
-## 7. One-source generation smoke test
+## 8. One-source generation smoke test
 
 Pick one `sample_id` from the private manifest.
 
@@ -209,7 +234,7 @@ Verify:
 - source / output hashes are present
 - FLUX / AE / PuLID hashes are present
 
-## 8. Identity smoke evaluation
+## 9. Identity smoke evaluation
 
 ```powershell
 & .\.venv-exp001-identity\Scripts\python.exe .\experiments\EXP-001-pulid-reaging-stress-test\scripts\evaluate_identity_adaface.py --adaface-repo .\third_party\AdaFace --checkpoint "<ADAFACE_CHECKPOINT>" --checkpoint-sha256 "<ADAFACE_SHA256>" --manifest .\data\private\EXP-001\dataset_manifest.csv --dataset-root "<AGEDB_ROOT>" --raw-manifest .\experiments\EXP-001-pulid-reaging-stress-test\outputs\raw_manifest.jsonl --raw-dir .\experiments\EXP-001-pulid-reaging-stress-test\outputs\raw --output .\experiments\EXP-001-pulid-reaging-stress-test\outputs\identity_metrics.jsonl
@@ -217,7 +242,7 @@ Verify:
 
 Both smoke rows should report `identity_status=ok`.
 
-## 9. Age smoke evaluation
+## 10. Age smoke evaluation
 
 ```powershell
 & .\.venv-exp001-age\Scripts\python.exe .\experiments\EXP-001-pulid-reaging-stress-test\scripts\evaluate_age_mivolo.py --mivolo-repo .\third_party\MiVOLO --checkpoint "<MIVOLO_FACE_ONLY_CHECKPOINT>" --checkpoint-sha256 "<MIVOLO_SHA256>" --detector-weights "<MIVOLO_DETECTOR_CHECKPOINT>" --detector-sha256 "<DETECTOR_SHA256>" --manifest .\data\private\EXP-001\dataset_manifest.csv --dataset-root "<AGEDB_ROOT>" --raw-manifest .\experiments\EXP-001-pulid-reaging-stress-test\outputs\raw_manifest.jsonl --raw-dir .\experiments\EXP-001-pulid-reaging-stress-test\outputs\raw --output .\experiments\EXP-001-pulid-reaging-stress-test\outputs\age_metrics.jsonl
@@ -225,7 +250,7 @@ Both smoke rows should report `identity_status=ok`.
 
 Both smoke rows should report `age_status=ok`.
 
-## 10. Metric aggregation smoke test
+## 11. Metric aggregation smoke test
 
 ```powershell
 & .\.venv-exp001-analysis\Scripts\python.exe .\experiments\EXP-001-pulid-reaging-stress-test\scripts\evaluate.py --raw-manifest .\experiments\EXP-001-pulid-reaging-stress-test\outputs\raw_manifest.jsonl --identity-jsonl .\experiments\EXP-001-pulid-reaging-stress-test\outputs\identity_metrics.jsonl --age-jsonl .\experiments\EXP-001-pulid-reaging-stress-test\outputs\age_metrics.jsonl --output .\experiments\EXP-001-pulid-reaging-stress-test\outputs\metrics.parquet --summary-output .\experiments\EXP-001-pulid-reaging-stress-test\outputs\summary.json --pareto-output .\experiments\EXP-001-pulid-reaging-stress-test\outputs\pareto_summary.csv
@@ -234,7 +259,7 @@ Both smoke rows should report `age_status=ok`.
 Confirm that the PuLID row is paired with its no-PuLID baseline and
 `identity_gain_vs_baseline` is populated.
 
-## 11. Capture Windows machine state
+## 12. Re-capture Windows machine state after smoke test
 
 ```powershell
 .\experiments\EXP-001-pulid-reaging-stress-test\scripts\capture_windows_environment.ps1
@@ -252,7 +277,7 @@ This records:
 
 Review the generated files before committing any reproducibility record.
 
-## 12. Promotion gate
+## 13. Promotion gate
 
 Only after Steps 1–11 succeed:
 
