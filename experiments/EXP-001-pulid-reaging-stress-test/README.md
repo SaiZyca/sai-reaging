@@ -48,8 +48,14 @@ requested age delta
 -30  -15   0  +15  +30
 ```
 
-The manifest is deterministic and must contain source file hashes. Raw face
-data is not committed to this repository.
+The selection is deterministic and the private manifest must contain source
+file hashes. Raw face data is not committed to this repository.
+
+AgeDB's official terms prohibit redistribution of its annotations. Therefore
+the materialized 8-row manifest is also **not committed**: it lives under
+`data/private/EXP-001/dataset_manifest.csv`. The repository stores only the
+public template plus a license-safe lock record containing aggregate selection
+metadata and the private manifest SHA256.
 
 ## Primary sweep
 
@@ -144,7 +150,7 @@ See `environment/README.md` for the environment contract.
 The code contract is now present, but the experiment still cannot be launched
 as canonical evidence. Before promotion to `EXECUTABLE`, the task must still:
 
-1. acquire AgeDB under acceptable research terms and materialize the 8-row manifest
+1. acquire AgeDB under its non-commercial research terms, materialize the private 8-row manifest, and commit only its hash/aggregate lock record
 2. materialize and hash PuLID / FLUX / AdaFace / MiVOLO / detector assets
 3. create the four isolated environments and preserve resolved lock files
 4. run manifest validation and a one-source end-to-end smoke test
