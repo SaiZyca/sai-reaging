@@ -136,12 +136,17 @@ def iter_planned_runs(
     config: Mapping,
     rows: Iterable[Mapping[str, str]],
     sample_id_filter: Optional[str] = None,
+    seeds_override: Optional[Iterable[int]] = None,
 ) -> Iterator[dict]:
     sweep = config["sweep"]
     deltas = [int(x) for x in sweep["requested_age_delta_years"]]
     weights = [float(x) for x in sweep["id_weight"]]
     starts = [int(x) for x in sweep["start_step"]]
-    seeds = [int(x) for x in sweep["seeds"]]
+    seeds = (
+        [int(x) for x in seeds_override]
+        if seeds_override is not None
+        else [int(x) for x in sweep["seeds"]]
+    )
 
     for row in rows:
         sample_id = row["sample_id"]
