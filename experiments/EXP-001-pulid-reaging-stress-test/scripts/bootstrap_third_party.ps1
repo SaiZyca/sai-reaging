@@ -28,16 +28,30 @@ function Sync-Repo {
 
     $Dir = Join-Path $ThirdParty $Name
 
+    $FreshClone = $false
     if (-not (Test-Path (Join-Path $Dir ".git"))) {
-        Write-Host "Cloning $Name..."
-        Invoke-Git -GitArgs @("clone", $Url, $Dir)
+        Write-Host "Cloning $Name with core.autocrlf=false..."
+        Invoke-Git -GitArgs @("-c", "core.autocrlf=false", "clone", $Url, $Dir)
+        $FreshClone = $true
     }
 
     Invoke-Git -GitArgs @("-C", $Dir, "config", "core.autocrlf", "false")
     Invoke-Git -GitArgs @("-C", $Dir, "fetch", "--all", "--tags", "--prune")
 
-    if ($ForceReset) {
-        Invoke-Git -GitArgs @("-C", $Dir, "reset", "--hard")
+    if ($FreshClone -or $ForceReset) {
+        Invoke-Git -GitArgs @("-C", $Dir, "reset", "--hard", "HEAD")
+        Invoke-Git -GitArgs @("-C", $Dir, "clean", "-fd")
+    }
+
+    $Dirty = (& git -C $Dir status --porcelain)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Unable to inspect working tree for $Name"
+    }
+    if ($Dirty -and -not $ForceReset) {
+        throw "$Name has local changes. Re-run bootstrap with -ForceReset to discard changes in this disposable third-party working copy."
+    }
+    if ($Dirty -and $ForceReset) {
+        Invoke-Git -GitArgs @("-C", $Dir, "reset", "--hard", "HEAD")
         Invoke-Git -GitArgs @("-C", $Dir, "clean", "-fd")
     }
 
