@@ -153,6 +153,42 @@ implementation:
       execution_requirement: >
         Record the exact cached Hugging Face snapshot revisions used by the
         smoke test before promotion to EXECUTABLE.
+    pulid_auxiliary:
+      eva_clip:
+        source: "QuanSun/EVA-CLIP"
+        filename: "EVA02_CLIP_L_336_psz14_s6B.pt"
+        revision:
+          value: null
+          required_at: EXECUTABLE
+        sha256:
+          value: null
+          required_at: EXECUTABLE
+      facexlib_retinaface:
+        source: "xinntao/facexlib release v0.1.0"
+        filename: "detection_Resnet50_Final.pth"
+        sha256:
+          value: null
+          required_at: EXECUTABLE
+      facexlib_bisenet:
+        source: "xinntao/facexlib release v0.2.0"
+        filename: "parsing_bisenet.pth"
+        sha256:
+          value: null
+          required_at: EXECUTABLE
+      facexlib_parsenet:
+        source: "xinntao/facexlib release v0.2.2"
+        filename: "parsing_parsenet.pth"
+        sha256:
+          value: null
+          required_at: EXECUTABLE
+    checkpoint_manifest:
+      local_manifest: "checkpoints/EXP-001/checkpoint_manifest.local.yaml"
+      repository_lock: "experiments/EXP-001-pulid-reaging-stress-test/checkpoint_manifest.lock.yaml"
+      status: pending_materialization
+      policy: >
+        Large model assets remain local under ignored checkpoints/EXP-001.
+        Commit only the Git-safe lock containing revisions, file hashes, sizes,
+        and aggregate text-encoder tree digests.
 
   environment_strategy:
     isolation: "stage-specific"
@@ -267,6 +303,12 @@ implementation:
         role: "Create the four isolated Windows Python environments."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/capture_windows_environment.ps1"
         role: "Capture Windows, GPU, Python, PyTorch, and resolved environment records."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/materialize_checkpoint_assets.py"
+        role: "Download/pin Hugging Face and GitHub-hosted model assets at exact revisions."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/verify_checkpoint_assets.py"
+        role: "Hash all required assets and emit checkpoint_manifest.lock.yaml."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/open_checkpoint_access_pages.ps1"
+        role: "Open FLUX gated-access and official evaluator checkpoint pages."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/bootstrap_third_party.sh"
         role: "Secondary Bash bootstrap retained for non-Windows environments."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/lock_private_manifest.py"
@@ -605,6 +647,11 @@ execution:
       --pulid-checkpoint <PULID_V0_9_1_CHECKPOINT>
       --flux-checkpoint <FLUX1_DEV_CHECKPOINT>
       --ae-checkpoint <FLUX_AE_CHECKPOINT>
+      --t5-snapshot <XFLUX_TEXT_ENCODER_SNAPSHOT>
+      --clip-snapshot <OPENAI_CLIP_SNAPSHOT>
+      --eva-clip-checkpoint <EVA_CLIP_CHECKPOINT>
+      --facexlib-weights <FACEXLIB_WEIGHTS_DIR>
+      --antelope-root <ANTELOPE_ROOT>
       --output-dir experiments/EXP-001-pulid-reaging-stress-test/outputs/raw
     identity_evaluation: >
       python experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate_identity_adaface.py
@@ -656,7 +703,7 @@ artifacts:
 implementation_handoff:
   remaining_to_reach_executable:
     - "Acquire AgeDB under its non-commercial research terms, materialize the private 8-row manifest, and commit only its license-safe lock/hash record."
-    - "Download/pin all model assets, including FLUX/AE, text-encoder snapshot revisions, and the MiVOLO detector; record local SHA256 values and access/license metadata."
+    - "Materialize and verify checkpoint_manifest.lock.yaml for FLUX/AE/PuLID, local T5/CLIP snapshots, PuLID auxiliary identity/preprocessing assets, AdaFace, MiVOLO, and the MiVOLO detector."
     - "Environment gate complete: four isolated Windows environments verified and resolved locks committed."
     - "Run manifest validation and a 1-source generation/evaluation smoke test."
     - "Verify output naming, raw manifest, deterministic seeds, evaluator success, and paired metric aggregation."
