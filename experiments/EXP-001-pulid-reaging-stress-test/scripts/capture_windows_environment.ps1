@@ -7,8 +7,9 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = (Resolve-Path (Join-Path $ScriptDir "..\..\..")).Path
 
+$EnvRecordDir = Join-Path $Root "experiments\EXP-001-pulid-reaging-stress-test\environment"
 if ([string]::IsNullOrWhiteSpace($OutputDir)) {
-    $OutputDir = Join-Path $Root "experiments\EXP-001-pulid-reaging-stress-test\environment\observed"
+    $OutputDir = Join-Path $EnvRecordDir "observed"
 }
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
@@ -25,7 +26,7 @@ foreach ($Name in $Envs.Keys) {
         throw "Missing environment: $PythonExe"
     }
 
-    & $PythonExe -m pip freeze --all | Set-Content -Encoding UTF8 (Join-Path $OutputDir "$Name.lock.txt")
+    & $PythonExe -m pip freeze --all | Set-Content -Encoding UTF8 (Join-Path $EnvRecordDir "$Name.lock.txt")
     & $PythonExe --version 2>&1 | Set-Content -Encoding UTF8 (Join-Path $OutputDir "$Name.python.txt")
     & $PythonExe -c "import sys; print(sys.version)" 2>&1 | Add-Content -Encoding UTF8 (Join-Path $OutputDir "$Name.python.txt")
 
@@ -37,4 +38,5 @@ foreach ($Name in $Envs.Keys) {
 Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsArchitecture | Format-List | Out-String | Set-Content -Encoding UTF8 (Join-Path $OutputDir "windows.txt")
 nvidia-smi 2>&1 | Set-Content -Encoding UTF8 (Join-Path $OutputDir "nvidia-smi.txt")
 
-Write-Host "Captured observed environment under $OutputDir"
+Write-Host "Captured resolved locks under $EnvRecordDir"
+Write-Host "Captured observed machine state under $OutputDir"
