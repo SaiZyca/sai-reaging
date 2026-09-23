@@ -1,0 +1,5 @@
+# EXP-001 metric-aggregation environment
+numpy<2
+pandas>=2.0,<3
+pyarrow>=12,<20
+PyYAML
