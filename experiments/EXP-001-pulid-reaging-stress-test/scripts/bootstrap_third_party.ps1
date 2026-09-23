@@ -12,10 +12,10 @@ $PatchDir = Join-Path $Root "experiments\EXP-001-pulid-reaging-stress-test\patch
 New-Item -ItemType Directory -Force -Path $ThirdParty | Out-Null
 
 function Invoke-Git {
-    param([string[]]$Args)
-    & git @Args
+    param([string[]]$GitArgs)
+    & git @GitArgs
     if ($LASTEXITCODE -ne 0) {
-        throw "git failed: git $($Args -join ' ')"
+        throw "git failed: git $($GitArgs -join ' ')"
     }
 }
 
@@ -30,18 +30,18 @@ function Sync-Repo {
 
     if (-not (Test-Path (Join-Path $Dir ".git"))) {
         Write-Host "Cloning $Name..."
-        Invoke-Git @("clone", $Url, $Dir)
+        Invoke-Git -GitArgs @("clone", $Url, $Dir)
     }
 
-    Invoke-Git @("-C", $Dir, "config", "core.autocrlf", "false")
-    Invoke-Git @("-C", $Dir, "fetch", "--all", "--tags", "--prune")
+    Invoke-Git -GitArgs @("-C", $Dir, "config", "core.autocrlf", "false")
+    Invoke-Git -GitArgs @("-C", $Dir, "fetch", "--all", "--tags", "--prune")
 
     if ($ForceReset) {
-        Invoke-Git @("-C", $Dir, "reset", "--hard")
-        Invoke-Git @("-C", $Dir, "clean", "-fd")
+        Invoke-Git -GitArgs @("-C", $Dir, "reset", "--hard")
+        Invoke-Git -GitArgs @("-C", $Dir, "clean", "-fd")
     }
 
-    Invoke-Git @("-C", $Dir, "checkout", "--detach", $Commit)
+    Invoke-Git -GitArgs @("-C", $Dir, "checkout", "--detach", $Commit)
     $Actual = (& git -C $Dir rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0) {
         throw "Unable to read HEAD for $Name"
@@ -65,8 +65,8 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "PuLID reproducibility patch already applied."
 }
 else {
-    Invoke-Git @("-C", $PulidDir, "apply", "--check", $Patch)
-    Invoke-Git @("-C", $PulidDir, "apply", $Patch)
+    Invoke-Git -GitArgs @("-C", $PulidDir, "apply", "--check", $Patch)
+    Invoke-Git -GitArgs @("-C", $PulidDir, "apply", $Patch)
     Write-Host "Applied PuLID reproducibility patch."
 }
 
