@@ -1,0 +1,32 @@
+diff --git a/pulid/pipeline_flux.py b/pulid/pipeline_flux.py
+index 706514c..0000000 100644
+--- a/pulid/pipeline_flux.py
++++ b/pulid/pipeline_flux.py
+@@ -55,7 +55,11 @@ class PuLIDPipeline(nn.Module):
+         self.eva_transform_mean = eva_transform_mean
+         self.eva_transform_std = eva_transform_std
+         # antelopev2
+-        snapshot_download('DIAMONIK7777/antelopev2', local_dir='models/antelopev2')
++        snapshot_download(
++            'DIAMONIK7777/antelopev2',
++            revision='ba0c3e10f4548361eb9a63265d87ce1140ab5a05',
++            local_dir='models/antelopev2',
++        )
+         providers = ['CPUExecutionProvider'] if onnx_provider == 'cpu' \
+             else ['CUDAExecutionProvider', 'CPUExecutionProvider']
+         self.app = FaceAnalysis(name='antelopev2', root='.', providers=providers)
+@@ -83,10 +87,11 @@ class PuLIDPipeline(nn.Module):
+         self.pulid_encoder = self.pulid_encoder.to(device)
+ 
+     def load_pretrain(self, pretrain_path=None, version='v0.9.0'):
+-        hf_hub_download('guozinan/PuLID', f'pulid_flux_{version}.safetensors', local_dir='models')
+-        ckpt_path = f'models/pulid_flux_{version}.safetensors'
+-        if pretrain_path is not None:
++        if pretrain_path is None:
++            ckpt_path = hf_hub_download(
++                'guozinan/PuLID', f'pulid_flux_{version}.safetensors', local_dir='models'
++            )
++        else:
+             ckpt_path = pretrain_path
+         state_dict = load_file(ckpt_path)
+         state_dict_dict = {}

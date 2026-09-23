@@ -48,8 +48,14 @@ requested age delta
 -30  -15   0  +15  +30
 ```
 
-The manifest is deterministic and must contain source file hashes. Raw face
-data is not committed to this repository.
+The selection is deterministic and the private manifest must contain source
+file hashes. Raw face data is not committed to this repository.
+
+AgeDB's official terms prohibit redistribution of its annotations. Therefore
+the materialized 8-row manifest is also **not committed**: it lives under
+`data/private/EXP-001/dataset_manifest.csv`. The repository stores only the
+public template plus a license-safe lock record containing aggregate selection
+metadata and the private manifest SHA256.
 
 ## Primary sweep
 
@@ -119,16 +125,38 @@ to PuLID.
 - evaluator success/failure rate
 - predefined Re-Aging failure tags
 
+## Implementation status
+
+The repository now contains the Phase A implementation surface:
+
+- `scripts/run_phase_a.py` — stock PuLID batch generation
+- `scripts/validate_manifest.py` — 8-source manifest / hash validation
+- `scripts/evaluate_identity_adaface.py` — primary independent identity metric
+- `scripts/evaluate_age_mivolo.py` — face-only age metric
+- `scripts/evaluate.py` — matched no-PuLID baseline join and Pareto metrics
+- `scripts/annotate_failures.py` — manual failure-review sheet
+- `scripts/bootstrap_third_party.sh` — exact third-party repository revisions
+
+The implementation deliberately uses **isolated environments** for generation,
+identity evaluation, age evaluation, and final aggregation. PuLID requires
+PyTorch 2.0.1 while the official AdaFace repository constrains PyTorch to
+<=1.13.1; forcing them into one environment would make the generation baseline
+less reproducible.
+
+See `environment/README.md` for the environment contract.
+
 ## IMPLEMENTATION-READY does not mean EXECUTABLE
 
-The experiment is now sufficiently specified for implementation, but it cannot
-be launched yet. Before promotion to `EXECUTABLE`, the task must still:
+The code contract is now present, but the experiment still cannot be launched
+as canonical evidence. Before promotion to `EXECUTABLE`, the task must still:
 
-1. implement the batch runner and evaluator wrappers
-2. acquire AgeDB and materialize the 8-row manifest
-3. materialize and hash all checkpoints / auxiliary assets
-4. resolve the dependency lock and save the environment freeze
-5. run a one-source smoke test
+1. acquire AgeDB under its non-commercial research terms, materialize the private 8-row manifest, and commit only its hash/aggregate lock record
+2. materialize and hash PuLID / FLUX / AdaFace / MiVOLO / detector assets
+3. create the four isolated environments and preserve resolved lock files
+4. run manifest validation and a one-source end-to-end smoke test
+5. verify raw-output naming, deterministic seeds, evaluator success, and metric aggregation
 6. record the exact project commit and observed hardware
+
+No full experiment has been executed and no hypothesis has been validated.
 
 The detailed canonical experiment state is in `experiment.yaml`.

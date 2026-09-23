@@ -11,9 +11,9 @@ state_transition:
   rationale: >
     Phase A repository/model assumptions, sweep, controls, dataset contract,
     evaluation protocol, analysis rules, decision thresholds, and implementation
-    handoff are now explicit. Runner code, materialized data, local checkpoints,
-    environment lock, and smoke-test evidence do not yet exist, so the experiment
-    is not EXECUTABLE.
+    handoff are explicit. Runner/evaluator code is now present, but materialized
+    data, local checkpoints, resolved environment locks, and smoke-test evidence
+    do not yet exist, so the experiment is not EXECUTABLE.
   executable: false
 
 source_research:
@@ -82,6 +82,13 @@ implementation:
     No architecture-changing patch. Reproducibility-only instrumentation is
     allowed and must be recorded as an exact diff if required to pin downloads
     or expose batch execution.
+  upstream_instrumentation_patch:
+    path: "experiments/EXP-001-pulid-reaging-stress-test/patches/pulid_reproducibility.patch"
+    purpose: >
+      Pin AntelopeV2 to the recorded revision and prevent an unnecessary
+      automatic PuLID checkpoint download when an explicitly hashed local
+      checkpoint is supplied. The patch does not alter model math or identity
+      injection behavior.
   project_commit:
     value: null
     required_at: EXECUTABLE
@@ -127,49 +134,104 @@ implementation:
       note: >
         This evaluator family must not be the sole identity metric because it is
         part of PuLID conditioning.
+    text_encoders:
+      t5:
+        source: "xlabs-ai/xflux_text_encoders"
+        revision:
+          value: null
+          required_at: EXECUTABLE
+      clip:
+        source: "openai/clip-vit-large-patch14"
+        revision:
+          value: null
+          required_at: EXECUTABLE
+      execution_requirement: >
+        Record the exact cached Hugging Face snapshot revisions used by the
+        smoke test before promotion to EXECUTABLE.
 
-  environment_target:
+  environment_strategy:
+    isolation: "stage-specific"
     os: "Linux x86_64"
     python: "3.10"
-    framework: "PyTorch"
-    framework_version: "2.0.1"
-    torchvision_version: "0.15.2"
-    cuda_runtime_target: "11.8"
-    upstream_requirements: "ToTheBeginning/PuLID@a66a6a1 requirements.txt"
-    precision: "bf16"
-    fp8: false
-    dependency_lock:
-      value: null
+    rationale: >
+      PuLID generation pins PyTorch 2.0.1 while the official AdaFace repository
+      constrains PyTorch to <=1.13.1. Generation, identity evaluation, age
+      evaluation, and metric aggregation therefore use isolated environments so
+      evaluator dependencies cannot silently change the generation baseline.
+    stages:
+      generation:
+        requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/generation.requirements.in"
+        resolved_lock:
+          value: null
+          required_at: EXECUTABLE
+          target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/generation.lock.txt"
+        framework: "PyTorch 2.0.1 / torchvision 0.15.2"
+        precision: "bf16"
+        fp8: false
+      identity_evaluation:
+        requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/identity.requirements.in"
+        resolved_lock:
+          value: null
+          required_at: EXECUTABLE
+          target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/identity.lock.txt"
+        framework: "PyTorch 1.13.1 / torchvision 0.14.1"
+      age_evaluation:
+        requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/age.requirements.in"
+        resolved_lock:
+          value: null
+          required_at: EXECUTABLE
+          target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/age.lock.txt"
+        framework: "PyTorch 2.0.1 / torchvision 0.15.2"
+      analysis:
+        requirements_input: "experiments/EXP-001-pulid-reaging-stress-test/environment/analysis.requirements.in"
+        resolved_lock:
+          value: null
+          required_at: EXECUTABLE
+          target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/analysis.lock.txt"
+        accelerator: "CPU sufficient"
+    environment_capture:
       required_at: EXECUTABLE
-      target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/requirements.lock.txt"
-    environment_freeze:
-      value: null
-      required_at: EXECUTABLE
-      target_path: "experiments/EXP-001-pulid-reaging-stress-test/environment/pip-freeze.txt"
+      requirements:
+        - "pip freeze --all for each stage"
+        - "pip check for each stage"
+        - "Python version"
+        - "PyTorch / CUDA version where applicable"
+        - "nvidia-smi / observed hardware"
     reason_for_bf16: >
       Official PuLID-FLUX documentation reports facial-detail degradation under
       fp8. Because this experiment measures identity and aging detail, fp8 is
       excluded from the primary experiment.
 
-  project_side_components_to_implement:
-    - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/run_phase_a.py"
-      role: >
-        Non-interactive batch runner that imports the pinned PuLID code and
-        executes the exact Phase A matrix.
-    - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate.py"
-      role: >
-        Run identity/age evaluation, pair PuLID outputs with no-PuLID baselines,
-        compute metrics, and emit machine-readable results.
-    - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/annotate_failures.py"
-      role: >
-        Produce a deterministic review sheet / annotation manifest for the
-        predefined Re-Aging failure taxonomy.
-    - path: "experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml"
-      role: canonical_generation_sweep
-    - path: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv"
-      role: materialized_input_manifest
-    - path: "experiments/EXP-001-pulid-reaging-stress-test/environment/requirements.lock.txt"
-      role: resolved_dependency_lock
+  project_side_components:
+    status: implemented_not_smoke_tested
+    files:
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/run_phase_a.py"
+        role: "Batch generation runner using stock pinned PuLID."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/validate_manifest.py"
+        role: "Validate the 8-source dataset contract and source hashes."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate_identity_adaface.py"
+        role: "Independent AdaFace identity evaluator."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate_age_mivolo.py"
+        role: "Face-only MiVOLO age evaluator."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate.py"
+        role: "Join evaluator outputs and compute matched-baseline metrics."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/annotate_failures.py"
+        role: "Create the predefined manual failure-annotation sheet."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/bootstrap_third_party.sh"
+        role: "Clone and checkout the pinned third-party repository revisions."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/lock_private_manifest.py"
+        role: "Create a license-safe hash/aggregate lock for the private AgeDB manifest."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/patches/pulid_reproducibility.patch"
+        role: "Reproducibility-only upstream instrumentation; no model-math change."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/RUNBOOK.md"
+        role: "Local/manual checklist for the EXECUTABLE promotion gate."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml"
+        role: canonical_generation_sweep
+    pending_materialization:
+      - "data/private/EXP-001/dataset_manifest.csv"
+      - "stage-specific resolved environment locks"
+      - "local model assets / hashes"
+      - "smoke-test outputs"
 
 variables:
   independent:
@@ -252,6 +314,15 @@ inputs:
       AgeDB suitable for controlled age-editability stress testing.
     raw_data_in_repo: false
     access_terms_verified:
+      value: true
+      verified_at: "2026-09-23"
+      source: "https://ibug.doc.ic.ac.uk/resources/agedb/"
+      terms_summary: >
+        AgeDB is available for non-commercial research only; annotations and
+        derived data may not be redistributed or exploited commercially.
+        Database access is downloadable from the official page, while the zip
+        password must be requested from the listed iBUG contact.
+    access_acquired:
       value: false
       required_at: EXECUTABLE
     fallback_policy: >
@@ -284,8 +355,15 @@ inputs:
 
   dataset_manifest:
     template: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.template.csv"
-    materialized_path: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv"
+    private_materialized_path: "data/private/EXP-001/dataset_manifest.csv"
+    repository_lock_template: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.template.yaml"
+    repository_lock_path: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.yaml"
     materialized_status: pending_implementation
+    redistribution_policy: >
+      Do not commit the materialized AgeDB manifest because it contains dataset
+      annotations covered by AgeDB's no-redistribution terms. Commit only the
+      license-safe lock record containing aggregate selection metadata and the
+      SHA256 of the private manifest.
     required_columns:
       - sample_id
       - subject_id
@@ -309,6 +387,8 @@ evaluation:
       repository: "https://github.com/mk-minchul/AdaFace"
       commit: "c60eaa786a42c03444f3df7096dbaf9d57ae010d"
       checkpoint_source: "official AdaFace pretrained-model link for R100 WebFace12M"
+      checkpoint_reference: "Google Drive id 1dswnavflETcnAuplZj1IOKKP0eM8ITgT"
+      checkpoint_filename: "adaface_ir101_webface12m.ckpt"
       checkpoint_sha256:
         value: null
         required_at: EXECUTABLE
@@ -336,6 +416,12 @@ evaluation:
       checkpoint_source: "official IMDB-cleaned face-only age+gender checkpoint"
       checkpoint_reference: "Google Drive id 1NlsNEVijX2tjMe8LBb1rI56WB_ADVHeP"
       checkpoint_sha256:
+        value: null
+        required_at: EXECUTABLE
+      detector_checkpoint_source: "official MiVOLO YOLO face/person detector"
+      detector_checkpoint_reference: "Google Drive id 1CGNCkZQNj5WkP3rLpENWAOgrBQkUWRdw"
+      detector_checkpoint_filename: "yolov8x_person_face.pt"
+      detector_checkpoint_sha256:
         value: null
         required_at: EXECUTABLE
       independence: >
@@ -464,15 +550,41 @@ execution:
     generation: >
       python experiments/EXP-001-pulid-reaging-stress-test/scripts/run_phase_a.py
       --config experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml
-      --manifest experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv
+      --manifest data/private/EXP-001/dataset_manifest.csv
+      --dataset-root <AGEDB_ROOT>
+      --pulid-repo third_party/PuLID
+      --pulid-checkpoint <PULID_V0_9_1_CHECKPOINT>
+      --flux-checkpoint <FLUX1_DEV_CHECKPOINT>
+      --ae-checkpoint <FLUX_AE_CHECKPOINT>
       --output-dir experiments/EXP-001-pulid-reaging-stress-test/outputs/raw
-    evaluation: >
-      python experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate.py
-      --config experiments/EXP-001-pulid-reaging-stress-test/configs/phase_a.yaml
-      --manifest experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.csv
+    identity_evaluation: >
+      python experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate_identity_adaface.py
+      --adaface-repo third_party/AdaFace
+      --checkpoint <ADAFACE_WEBFACE12M_CHECKPOINT>
+      --manifest data/private/EXP-001/dataset_manifest.csv
+      --dataset-root <AGEDB_ROOT>
+      --raw-manifest experiments/EXP-001-pulid-reaging-stress-test/outputs/raw_manifest.jsonl
       --raw-dir experiments/EXP-001-pulid-reaging-stress-test/outputs/raw
+      --output experiments/EXP-001-pulid-reaging-stress-test/outputs/identity_metrics.jsonl
+    age_evaluation: >
+      python experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate_age_mivolo.py
+      --mivolo-repo third_party/MiVOLO
+      --checkpoint <MIVOLO_FACE_ONLY_CHECKPOINT>
+      --detector-weights <MIVOLO_DETECTOR_CHECKPOINT>
+      --manifest data/private/EXP-001/dataset_manifest.csv
+      --dataset-root <AGEDB_ROOT>
+      --raw-manifest experiments/EXP-001-pulid-reaging-stress-test/outputs/raw_manifest.jsonl
+      --raw-dir experiments/EXP-001-pulid-reaging-stress-test/outputs/raw
+      --output experiments/EXP-001-pulid-reaging-stress-test/outputs/age_metrics.jsonl
+    aggregation: >
+      python experiments/EXP-001-pulid-reaging-stress-test/scripts/evaluate.py
+      --raw-manifest experiments/EXP-001-pulid-reaging-stress-test/outputs/raw_manifest.jsonl
+      --identity-jsonl experiments/EXP-001-pulid-reaging-stress-test/outputs/identity_metrics.jsonl
+      --age-jsonl experiments/EXP-001-pulid-reaging-stress-test/outputs/age_metrics.jsonl
       --output experiments/EXP-001-pulid-reaging-stress-test/outputs/metrics.parquet
-    status: contract_fixed_code_not_yet_implemented
+      --summary-output experiments/EXP-001-pulid-reaging-stress-test/outputs/summary.json
+      --pareto-output experiments/EXP-001-pulid-reaging-stress-test/outputs/pareto_summary.csv
+    status: implementation_code_present_not_smoke_tested
 
 artifacts:
   raw_outputs:
@@ -494,13 +606,11 @@ artifacts:
 
 implementation_handoff:
   remaining_to_reach_executable:
-    - "Implement batch generation runner without changing PuLID architecture."
-    - "Implement AdaFace and MiVOLO evaluator wrappers."
-    - "Acquire AgeDB under acceptable research terms and materialize the 8-row manifest."
-    - "Download/pin all model assets; record local SHA256 values and access/license metadata."
-    - "Resolve and commit the environment dependency lock; save pip freeze."
-    - "Run a 1-source smoke test for baseline + one PuLID setting."
-    - "Verify output naming, raw manifest, deterministic seeds, and evaluator success."
+    - "Acquire AgeDB under its non-commercial research terms, materialize the private 8-row manifest, and commit only its license-safe lock/hash record."
+    - "Download/pin all model assets, including FLUX/AE, text-encoder snapshot revisions, and the MiVOLO detector; record local SHA256 values and access/license metadata."
+    - "Create the four isolated execution environments and commit resolved stage-specific locks."
+    - "Run manifest validation and a 1-source generation/evaluation smoke test."
+    - "Verify output naming, raw manifest, deterministic seeds, evaluator success, and paired metric aggregation."
     - "Record exact sai-reaging project commit and observed hardware."
   separate_follow_up_if_needed:
     H3: >
@@ -516,7 +626,7 @@ readiness:
   evaluation_plan_fixed: true
   decision_rules_fixed: true
   implementation_plan_fixed: true
-  code_present: false
+  code_present: true
   environment_materialized: false
   checkpoints_materialized: false
   dataset_materialized: false

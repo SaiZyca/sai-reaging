@@ -38,7 +38,8 @@ sweep:
     implementation: "id_image=None"
 
 dataset:
-  manifest: "../dataset_manifest.csv"
+  manifest: "data/private/EXP-001/dataset_manifest.csv"
+  manifest_lock: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.yaml"
   expected_source_count: 8
   source_age_range: [48, 52]
 
