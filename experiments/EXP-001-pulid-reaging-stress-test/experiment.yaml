@@ -123,8 +123,9 @@ implementation:
       source: "black-forest-labs/FLUX.1-dev"
       filename: "flux1-dev.safetensors"
       precision: "bf16"
+      revision: "3de623fc3c33e44ffbe2bad470d0f45bccf2eb21"
       sha256:
-        value: null
+        value: "4610115bb0c89560703c892c59ac2742fa821e60ef5871b33493ba544683abd7"
         required_at: EXECUTABLE
       license: "flux-1-dev-non-commercial-license"
       access: gated
@@ -134,8 +135,9 @@ implementation:
     autoencoder:
       source: "black-forest-labs/FLUX.1-dev"
       filename: "ae.safetensors"
+      revision: "3de623fc3c33e44ffbe2bad470d0f45bccf2eb21"
       sha256:
-        value: null
+        value: "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
         required_at: EXECUTABLE
     pulid_identity_dependency:
       source: "DIAMONIK7777/antelopev2"
@@ -150,13 +152,19 @@ implementation:
       t5:
         source: "xlabs-ai/xflux_text_encoders"
         revision:
-          value: null
+          value: "5ce032c6b9bfe31a4ffb220c8afa147e8de6acea"
           required_at: EXECUTABLE
+        file_count: 10
+        total_bytes: 9525488413
+        tree_sha256: "1062a69701e7864098de847a295d1fe9704ebdd8e6ae712727c1349b6517209e"
       clip:
         source: "openai/clip-vit-large-patch14"
         revision:
-          value: null
+          value: "32bd64288804d66eefd0ccbe215aa642df71cc41"
           required_at: EXECUTABLE
+        file_count: 10
+        total_bytes: 1714265650
+        tree_sha256: "f22bc2f3c35fe1f2f7b74dc3d9ef56d5b54ebba0d92c25727e2ac9bb7de3b290"
       execution_requirement: >
         Record the exact cached Hugging Face snapshot revisions used by the
         smoke test before promotion to EXECUTABLE.
@@ -165,33 +173,36 @@ implementation:
         source: "QuanSun/EVA-CLIP"
         filename: "EVA02_CLIP_L_336_psz14_s6B.pt"
         revision:
-          value: null
+          value: "11afd202f2ae80869d6cef18b1ec775e79bd8d12"
           required_at: EXECUTABLE
         sha256:
-          value: null
+          value: "84c3a17a228c567a155259b2245b0b59072bf7da510260a0a02ec54de6d50b05"
           required_at: EXECUTABLE
       facexlib_retinaface:
         source: "xinntao/facexlib release v0.1.0"
         filename: "detection_Resnet50_Final.pth"
         sha256:
-          value: null
+          value: "6d1de9c2944f2ccddca5f5e010ea5ae64a39845a86311af6fdf30841b0a5a16d"
           required_at: EXECUTABLE
       facexlib_bisenet:
         source: "xinntao/facexlib release v0.2.0"
         filename: "parsing_bisenet.pth"
         sha256:
-          value: null
+          value: "468e13ca13a9b43cc0881a9f99083a430e9c0a38abd935431d1c28ee94b26567"
           required_at: EXECUTABLE
       facexlib_parsenet:
         source: "xinntao/facexlib release v0.2.2"
         filename: "parsing_parsenet.pth"
         sha256:
-          value: null
+          value: "3d558d8d0e42c20224f13cf5a29c79eba2d59913419f945545d8cf7b72920de2"
           required_at: EXECUTABLE
     checkpoint_manifest:
       local_manifest: "checkpoints/EXP-001/checkpoint_manifest.local.yaml"
       repository_lock: "experiments/EXP-001-pulid-reaging-stress-test/checkpoint_manifest.lock.yaml"
-      status: pending_materialization
+      status: materialized
+      materialized_at: "2026-09-24"
+      source_commit: "867cf7147756d74123491b4ac6bca8b34296373c"
+      source_actor: "SaiZyca"
       policy: >
         Large model assets remain local under ignored checkpoints/EXP-001.
         Commit only the Git-safe lock containing revisions, file hashes, sizes,
@@ -488,7 +499,7 @@ evaluation:
       checkpoint_reference: "Google Drive id 1dswnavflETcnAuplZj1IOKKP0eM8ITgT"
       checkpoint_filename: "adaface_ir101_webface12m.ckpt"
       checkpoint_sha256:
-        value: null
+        value: "0e7a3238d2a50f3fe3860782534928ac7cb2598977cf897f6869fd5ac2493fd0"
         required_at: EXECUTABLE
       preprocessing: >
         Official AdaFace alignment/inference path: aligned 112x112 face,
@@ -514,13 +525,13 @@ evaluation:
       checkpoint_source: "official IMDB-cleaned face-only age+gender checkpoint"
       checkpoint_reference: "Google Drive id 1NlsNEVijX2tjMe8LBb1rI56WB_ADVHeP"
       checkpoint_sha256:
-        value: null
+        value: "3711b3530e94fa904fe3c9043dd9c5b73a13c8c347b435eb5eed89d97a8aaa4a"
         required_at: EXECUTABLE
       detector_checkpoint_source: "official MiVOLO YOLO face/person detector"
       detector_checkpoint_reference: "Google Drive id 1CGNCkZQNj5WkP3rLpENWAOgrBQkUWRdw"
       detector_checkpoint_filename: "yolov8x_person_face.pt"
       detector_checkpoint_sha256:
-        value: null
+        value: "2620f45609a65f909eb876bd7401308b5a8f3843ad5a03cb7416066a3e492989"
         required_at: EXECUTABLE
       independence: >
         PuLID does not condition on MiVOLO age features. Use face-only mode to
@@ -710,7 +721,7 @@ artifacts:
 implementation_handoff:
   remaining_to_reach_executable:
     - "Acquire AgeDB under its non-commercial research terms, materialize the private 8-row manifest, and commit only its license-safe lock/hash record."
-    - "Materialize and verify checkpoint_manifest.lock.yaml for FLUX/AE/PuLID, local T5/CLIP snapshots, PuLID auxiliary identity/preprocessing assets, AdaFace, MiVOLO, and the MiVOLO detector."
+    - "Checkpoint gate complete: checkpoint_manifest.lock.yaml committed with exact revisions and hashes for generation, PuLID auxiliary, and evaluator assets."
     - "Environment gate complete: four isolated Windows environments verified and resolved locks committed."
     - "Run manifest validation and a 1-source generation/evaluation smoke test."
     - "Verify output naming, raw manifest, deterministic seeds, evaluator success, and paired metric aggregation."
@@ -731,7 +742,7 @@ readiness:
   implementation_plan_fixed: true
   code_present: true
   environment_materialized: true
-  checkpoints_materialized: false
+  checkpoints_materialized: true
   dataset_materialized: false
   smoke_test_passed: false
   current_state_justified: IMPLEMENTATION-READY
