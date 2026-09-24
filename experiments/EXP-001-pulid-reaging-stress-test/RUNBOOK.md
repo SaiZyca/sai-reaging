@@ -151,8 +151,14 @@ InsightFace / ONNX Runtime:
   --contact-sheet .\data\private\EXP-001\dataset_candidates_review.jpg
 ```
 
-The default review pool contains 12 distinct female identities and 12 distinct
-male identities. Both files are private and ignored by Git:
+The target review pool is up to 12 distinct identities per gender. If fewer
+than 12 pass the automatic gates but at least four remain, the helper uses all
+available candidates and prints a warning. Fewer than four for either gender is
+a hard failure because the final cohort requires 4 F / 4 M.
+
+The helper defaults to CPU ONNX inference because candidate screening is
+offline/non-interactive and does not require CUDA. Both files are private and
+ignored by Git:
 
 ```text
 data\private\EXP-001\dataset_candidates.csv
@@ -195,12 +201,10 @@ Do not alter:
 - face bbox / yaw fields
 - source SHA256
 
-If fewer than four candidates of either gender pass manual review, rerun
-`prepare_agedb_candidates.py` with a larger private pool, for example:
-
-```powershell
---review-count-per-gender 20
-```
+If fewer than four candidates of either gender pass manual review, the current
+automatic gate leaves insufficient manual-quality margin. Do not silently
+relax the gate; record the observed failure and update the experiment contract
+before changing age range, yaw, face size, or other selection criteria.
 
 ### 5.3 Finalize, validate, and lock the private manifest
 
