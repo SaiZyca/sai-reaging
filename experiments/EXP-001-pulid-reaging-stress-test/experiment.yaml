@@ -468,6 +468,14 @@ inputs:
         max_abs_yaw_deg: 20
         min_face_bbox_side_px: 112
         age_gender_identity_source: "AgeDB filename annotations only"
+      review_pool:
+        target_per_gender: 12
+        minimum_per_gender: 4
+        insufficient_buffer_policy: >
+          If fewer than 12 but at least four distinct identities pass the
+          automatic gates for a gender, use all available candidates and emit
+          a warning. Fewer than four is a hard failure.
+        default_onnx_provider: "cpu"
       manual_visual_review:
         - "no heavy face occlusion"
         - "no sunglasses covering the eyes"
