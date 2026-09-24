@@ -77,7 +77,7 @@ Use one top-level Project: **Re-Aging Research Program**.
 
 Recommended custom fields:
 
-- Type
+- Work Type
 - Domain
 - Priority
 - Research State
