@@ -66,6 +66,9 @@ def main() -> None:
         selected.extend(chosen)
 
     selected.sort(key=lambda r: (r["gender_label"], int(r["selection_rank"])))
+    subjects = [r["subject_id"] for r in selected]
+    if len(set(subjects)) != len(subjects):
+        raise RuntimeError("Final selection contains a duplicate identity across gender groups")
 
     fieldnames = [
         "sample_id",
@@ -107,7 +110,10 @@ def main() -> None:
         w.writerows(out_rows)
 
     print(f"Wrote private AgeDB manifest: {args.output}")
-    print("rows=8 identities=8 gender_counts={'F': 4, 'M': 4}")
+    print(
+        f"rows={len(out_rows)} identities={len(set(subjects))} "
+        f"gender_counts={{'F': {args.per_gender}, 'M': {args.per_gender}}}"
+    )
 
 
 if __name__ == "__main__":
