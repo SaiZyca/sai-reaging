@@ -102,61 +102,143 @@ information is written under `environment\observed\`.
 
 ## 4. Acquire AgeDB
 
-Use the official AgeDB page:
+Use the official iBUG AgeDB page:
 
 ```text
 https://ibug.doc.ic.ac.uk/resources/agedb/
 ```
 
-AgeDB is restricted to non-commercial research use and its annotations must
-not be redistributed. Keep the dataset outside Git or under an ignored local
-directory.
+AgeDB is restricted to non-commercial research use. The official terms prohibit
+redistribution of annotations and derived data outside the permitted internal
+use. Keep the dataset and every per-subject selection artifact outside Git.
 
 The official page provides the database download and instructs researchers to
 request the zip password from the listed iBUG contact.
 
-## 5. Materialize the private 8-source manifest
-
-Create:
-
-```text
-data\private\EXP-001\dataset_manifest.csv
-```
-
-Start from:
-
-```text
-experiments\EXP-001-pulid-reaging-stress-test\dataset_manifest.template.csv
-```
-
-Selection contract:
-
-- exactly 8 distinct identities
-- source age 48–52
-- one source image per identity
-- 4 M / 4 F using dataset-provided labels only
-- |yaw| <= 20 degrees
-- no heavy face occlusion
-- no extreme expression
-- sufficient face resolution for identity evaluation
-
-Do not commit the private CSV.
-
-Validate it with the analysis environment:
+After extraction, set a local PowerShell variable to the directory that
+contains the AgeDB image files:
 
 ```powershell
-& .\.venv-exp001-analysis\Scripts\python.exe .\experiments\EXP-001-pulid-reaging-stress-test\scripts\validate_manifest.py --manifest .\data\private\EXP-001\dataset_manifest.csv --dataset-root "<AGEDB_ROOT>"
+$AgeDBRoot = "<PATH_TO_EXTRACTED_AGEDB>"
+```
+
+Do not use a third-party redistributed copy for canonical EXP-001 execution.
+
+## 5. Dataset Gate — deterministic private selection
+
+### 5.1 Build the private review pool
+
+The selection helper parses the AgeDB filename annotations locally and only
+considers images whose dataset-provided age is 48–52.
+
+It then applies the automatic EXP-001 gates:
+
+- exactly one AntelopeV2-detected face
+- |yaw| <= 20 degrees using the AntelopeV2 3D-landmark pose output
+- detected face bounding-box minimum side >= 112 px
+- one candidate per identity in the review ranking
+- deterministic seed `20260923`
+
+Run it with the generation environment because that environment already has
+InsightFace / ONNX Runtime:
+
+```powershell
+& .\.venv-exp001-generation\Scripts\python.exe `
+  .\experiments\EXP-001-pulid-reaging-stress-test\scripts\prepare_agedb_candidates.py `
+  --dataset-root $AgeDBRoot `
+  --antelope-root .\checkpoints\EXP-001\pulid_aux\antelope `
+  --output .\data\private\EXP-001\dataset_candidates.csv `
+  --contact-sheet .\data\private\EXP-001\dataset_candidates_review.jpg
+```
+
+The default review pool contains 12 distinct female identities and 12 distinct
+male identities. Both files are private and ignored by Git:
+
+```text
+data\private\EXP-001\dataset_candidates.csv
+data\private\EXP-001\dataset_candidates_review.jpg
+```
+
+The filename parser expects the AgeDB image convention:
+
+```text
+<image_id>_<identity>_<age>_<gender>.jpg
+```
+
+If the local official archive does not match this layout, stop and update the
+parser contract rather than renaming files or inferring labels manually.
+
+### 5.2 Manual visual gate
+
+Open:
+
+```text
+data\private\EXP-001\dataset_candidates_review.jpg
+```
+
+and inspect the corresponding source images.
+
+In `dataset_candidates.csv`, set `manual_gate_pass` to `true` only when
+all of the following hold:
+
+- no heavy face occlusion
+- no sunglasses covering the eyes
+- no extreme expression
+
+Use `manual_notes` to record a short reason when rejecting a candidate.
+
+Do not alter:
+
+- `candidate_id`
+- `selection_rank`
+- identity / age / gender fields
+- face bbox / yaw fields
+- source SHA256
+
+If fewer than four candidates of either gender pass manual review, rerun
+`prepare_agedb_candidates.py` with a larger private pool, for example:
+
+```powershell
+--review-count-per-gender 20
+```
+
+### 5.3 Finalize, validate, and lock the private manifest
+
+Finalize the 8-row manifest:
+
+```powershell
+& .\.venv-exp001-analysis\Scripts\python.exe `
+  .\experiments\EXP-001-pulid-reaging-stress-test\scripts\finalize_agedb_manifest.py `
+  --candidates .\data\private\EXP-001\dataset_candidates.csv `
+  --output .\data\private\EXP-001\dataset_manifest.csv
+```
+
+The finalizer takes the first four manually approved female and male candidates
+by deterministic selection rank. The private manifest must remain outside Git.
+
+Validate all labels, uniqueness, source files, SHA256 values, yaw limits, and
+4 M / 4 F balance:
+
+```powershell
+& .\.venv-exp001-analysis\Scripts\python.exe `
+  .\experiments\EXP-001-pulid-reaging-stress-test\scripts\validate_manifest.py `
+  --manifest .\data\private\EXP-001\dataset_manifest.csv `
+  --dataset-root $AgeDBRoot
 ```
 
 Create the license-safe repository lock:
 
 ```powershell
-& .\.venv-exp001-analysis\Scripts\python.exe .\experiments\EXP-001-pulid-reaging-stress-test\scripts\lock_private_manifest.py --manifest .\data\private\EXP-001\dataset_manifest.csv --dataset-root "<AGEDB_ROOT>" --output .\experiments\EXP-001-pulid-reaging-stress-test\dataset_manifest.lock.yaml
+& .\.venv-exp001-analysis\Scripts\python.exe `
+  .\experiments\EXP-001-pulid-reaging-stress-test\scripts\lock_private_manifest.py `
+  --manifest .\data\private\EXP-001\dataset_manifest.csv `
+  --dataset-root $AgeDBRoot `
+  --output .\experiments\EXP-001-pulid-reaging-stress-test\dataset_manifest.lock.yaml
 ```
 
-The generated lock contains no per-subject AgeDB annotations and may be
-committed.
-
+The generated lock contains only aggregate selection metadata and the SHA256 of
+the private manifest. It does not contain per-subject AgeDB annotations and is
+the only Dataset Gate artifact intended for Git.
 ## 6. Checkpoint Gate — access and automatic materialization
 
 The checkpoint gate uses an ignored local root:
