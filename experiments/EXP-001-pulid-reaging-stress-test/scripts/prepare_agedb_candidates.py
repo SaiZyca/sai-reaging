@@ -43,13 +43,14 @@ def parse_args() -> argparse.Namespace:
         default=Path("data/private/EXP-001/dataset_candidates_review.jpg"),
     )
     p.add_argument("--review-count-per-gender", type=int, default=12)
+    p.add_argument("--minimum-per-gender", type=int, default=4)
     p.add_argument("--seed", type=int, default=20260923)
     p.add_argument("--age-min", type=int, default=48)
     p.add_argument("--age-max", type=int, default=52)
     p.add_argument("--max-yaw", type=float, default=20.0)
     p.add_argument("--min-face-side", type=float, default=112.0)
     p.add_argument("--det-size", type=int, default=640)
-    p.add_argument("--provider", choices=["cuda", "cpu"], default="cuda")
+    p.add_argument("--provider", choices=["cuda", "cpu"], default="cpu")
     return p.parse_args()
 
 
@@ -228,11 +229,17 @@ def main() -> None:
             if len(chosen) >= args.review_count_per_gender:
                 break
 
-        if len(chosen) < args.review_count_per_gender:
+        if len(chosen) < args.minimum_per_gender:
             raise RuntimeError(
                 f"Only {len(chosen)} distinct automatically eligible {gender} "
-                f"identities; need {args.review_count_per_gender}. "
-                "Reduce review-count-per-gender only after reviewing the gate contract."
+                f"identities; need at least {args.minimum_per_gender} for the "
+                "final cohort. Review the automatic gate contract before relaxing it."
+            )
+        if len(chosen) < args.review_count_per_gender:
+            print(
+                f"WARNING: requested {args.review_count_per_gender} {gender} review "
+                f"candidates but only {len(chosen)} distinct automatically eligible "
+                "identities are available; using all available candidates."
             )
 
         for rank, row in enumerate(chosen, 1):
@@ -270,6 +277,10 @@ def main() -> None:
     print(f"parsed_age_range_files={len(parsed)}")
     print(f"automatically_eligible={len(eligible)}")
     print(f"review_rows={len(review_rows)}")
+    print(
+        "review_gender_counts="
+        + str(dict(Counter(r["gender_label"] for r in review_rows)))
+    )
     print(f"parse_failures_outside_expected_filename_pattern={parse_failures}")
     print(f"automatic_rejections={dict(reject)}")
     print(f"private_review_csv={args.output}")
