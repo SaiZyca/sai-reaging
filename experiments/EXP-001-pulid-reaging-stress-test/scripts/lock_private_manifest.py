@@ -78,7 +78,7 @@ def main():
             "deterministic_selection_seed": 20260923,
         },
         "access": {
-            "terms_verified_at": "2026-09-23",
+            "terms_verified_at": "2026-09-24",
             "official_page": "https://ibug.doc.ic.ac.uk/resources/agedb/",
             "use_scope": "non-commercial research only",
             "annotations_redistributable": False,

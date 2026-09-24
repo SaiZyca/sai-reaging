@@ -327,6 +327,10 @@ implementation:
         role: "Hash all required assets and emit checkpoint_manifest.lock.yaml."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/open_checkpoint_access_pages.ps1"
         role: "Open FLUX gated-access and official evaluator checkpoint pages."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/prepare_agedb_candidates.py"
+        role: "Build a private deterministic AgeDB review pool using filename annotations plus AntelopeV2 detection/pose gates."
+      - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/finalize_agedb_manifest.py"
+        role: "Select the first four manually approved F and M candidates by deterministic rank and write the private 8-row manifest."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/bootstrap_third_party.sh"
         role: "Secondary Bash bootstrap retained for non-Windows environments."
       - path: "experiments/EXP-001-pulid-reaging-stress-test/scripts/lock_private_manifest.py"
@@ -424,7 +428,7 @@ inputs:
     raw_data_in_repo: false
     access_terms_verified:
       value: true
-      verified_at: "2026-09-23"
+      verified_at: "2026-09-24"
       source: "https://ibug.doc.ic.ac.uk/resources/agedb/"
       terms_summary: >
         AgeDB is available for non-commercial research only; annotations and
@@ -456,6 +460,21 @@ inputs:
       - "no sunglasses covering the eyes"
       - "no extreme expression"
       - "sufficient face resolution for 112x112 identity alignment"
+    implementation_gates:
+      automatic:
+        detector: "AntelopeV2 FaceAnalysis from the materialized EXP-001 checkpoint set"
+        face_count: "exactly 1 detected face"
+        max_abs_yaw_deg: 20
+        min_face_bbox_side_px: 112
+        age_gender_identity_source: "AgeDB filename annotations only"
+      manual_visual_review:
+        - "no heavy face occlusion"
+        - "no sunglasses covering the eyes"
+        - "no extreme expression"
+      note: >
+        Automatic gates are implementation criteria for reproducible candidate
+        screening, not AgeDB-provided annotations. Manual review is retained
+        for visual conditions without a fixed validated classifier in EXP-001.
     deterministic_selection_seed: 20260923
     deterministic_selection_rule: >
       Filter by gates, group by dataset-provided gender label, sort eligible
@@ -464,10 +483,14 @@ inputs:
 
   dataset_manifest:
     template: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.template.csv"
+    private_candidate_path: "data/private/EXP-001/dataset_candidates.csv"
+    private_candidate_review_sheet: "data/private/EXP-001/dataset_candidates_review.jpg"
     private_materialized_path: "data/private/EXP-001/dataset_manifest.csv"
+    candidate_preparation_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/prepare_agedb_candidates.py"
+    manifest_finalization_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/finalize_agedb_manifest.py"
     repository_lock_template: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.template.yaml"
     repository_lock_path: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.yaml"
-    materialized_status: pending_implementation
+    materialized_status: pending_materialization
     redistribution_policy: >
       Do not commit the materialized AgeDB manifest because it contains dataset
       annotations covered by AgeDB's no-redistribution terms. Commit only the
@@ -720,7 +743,7 @@ artifacts:
 
 implementation_handoff:
   remaining_to_reach_executable:
-    - "Acquire AgeDB under its non-commercial research terms, materialize the private 8-row manifest, and commit only its license-safe lock/hash record."
+    - "Acquire AgeDB under its non-commercial research terms, generate the private deterministic review pool, approve visual quality gates, materialize the private 8-row manifest, and commit only its license-safe lock/hash record."
     - "Checkpoint gate complete: checkpoint_manifest.lock.yaml committed with exact revisions and hashes for generation, PuLID auxiliary, and evaluator assets."
     - "Environment gate complete: four isolated Windows environments verified and resolved locks committed."
     - "Run manifest validation and a 1-source generation/evaluation smoke test."
