@@ -1,0 +1,82 @@
+schema_version: '0.1'
+experiment_id: EXP-001
+materialization:
+  asset_bytes_committed_to_git: false
+  local_asset_root: checkpoints/EXP-001
+generation:
+  pulid:
+    filename: pulid_flux_v0.9.1.safetensors
+    bytes: 1142099520
+    sha256: 92c41c3af322b02e58e1b32842e4601e08c8f16ec1fe80089dbe957df510f51d
+    repo_id: guozinan/PuLID
+    revision: 492b1451255dc9d9bc3c857259690b5f8b998d4a
+  flux:
+    filename: flux1-dev.safetensors
+    bytes: 23802932552
+    sha256: 4610115bb0c89560703c892c59ac2742fa821e60ef5871b33493ba544683abd7
+    repo_id: black-forest-labs/FLUX.1-dev
+    revision: 3de623fc3c33e44ffbe2bad470d0f45bccf2eb21
+  autoencoder:
+    filename: ae.safetensors
+    bytes: 335304388
+    sha256: afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38
+    repo_id: black-forest-labs/FLUX.1-dev
+    revision: 3de623fc3c33e44ffbe2bad470d0f45bccf2eb21
+  t5:
+    repo_id: xlabs-ai/xflux_text_encoders
+    revision: 5ce032c6b9bfe31a4ffb220c8afa147e8de6acea
+    file_count: 10
+    total_bytes: 9525488413
+    tree_sha256: 1062a69701e7864098de847a295d1fe9704ebdd8e6ae712727c1349b6517209e
+  clip:
+    repo_id: openai/clip-vit-large-patch14
+    revision: 32bd64288804d66eefd0ccbe215aa642df71cc41
+    file_count: 10
+    total_bytes: 1714265650
+    tree_sha256: f22bc2f3c35fe1f2f7b74dc3d9ef56d5b54ebba0d92c25727e2ac9bb7de3b290
+pulid_auxiliary:
+  eva_clip:
+    filename: EVA02_CLIP_L_336_psz14_s6B.pt
+    bytes: 856461210
+    sha256: 84c3a17a228c567a155259b2245b0b59072bf7da510260a0a02ec54de6d50b05
+    repo_id: QuanSun/EVA-CLIP
+    revision: 11afd202f2ae80869d6cef18b1ec775e79bd8d12
+  antelopev2:
+    filename: glintr100.onnx
+    bytes: 260665334
+    sha256: 4ab1d6435d639628a6f3e5008dd4f929edf4c4124b1a7169e1048f9fef534cdf
+    repo_id: DIAMONIK7777/antelopev2
+    revision: ba0c3e10f4548361eb9a63265d87ce1140ab5a05
+  facexlib_retinaface:
+    filename: detection_Resnet50_Final.pth
+    bytes: 109497761
+    sha256: 6d1de9c2944f2ccddca5f5e010ea5ae64a39845a86311af6fdf30841b0a5a16d
+  facexlib_bisenet:
+    filename: parsing_bisenet.pth
+    bytes: 53289463
+    sha256: 468e13ca13a9b43cc0881a9f99083a430e9c0a38abd935431d1c28ee94b26567
+  facexlib_parsenet:
+    filename: parsing_parsenet.pth
+    bytes: 85331193
+    sha256: 3d558d8d0e42c20224f13cf5a29c79eba2d59913419f945545d8cf7b72920de2
+evaluators:
+  adaface_r100_webface12m:
+    filename: adaface_ir101_webface12m.ckpt
+    bytes: 1526801999
+    sha256: 0e7a3238d2a50f3fe3860782534928ac7cb2598977cf897f6869fd5ac2493fd0
+  mivolo_face_only_age_gender:
+    filename: mivolo_face_only_imdb_cleaned_age_gender.pth.tar
+    bytes: 103498750
+    sha256: 3711b3530e94fa904fe3c9043dd9c5b73a13c8c347b435eb5eed89d97a8aaa4a
+  mivolo_detector:
+    filename: yolov8x_person_face.pt
+    bytes: 136716488
+    sha256: 2620f45609a65f909eb876bd7401308b5a8f3843ad5a03cb7416066a3e492989
+access:
+  flux_gated_terms_required: true
+  flux_license: flux-1-dev-non-commercial-license
+  google_drive_assets_from_official_upstream_links: true
+verification:
+  all_required_files_present: true
+  known_pulid_sha256_verified: true
+  known_antelope_glintr_sha256_verified: true
