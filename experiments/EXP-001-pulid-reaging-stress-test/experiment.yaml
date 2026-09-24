@@ -490,7 +490,7 @@ inputs:
     manifest_finalization_script: "experiments/EXP-001-pulid-reaging-stress-test/scripts/finalize_agedb_manifest.py"
     repository_lock_template: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.template.yaml"
     repository_lock_path: "experiments/EXP-001-pulid-reaging-stress-test/dataset_manifest.lock.yaml"
-    materialized_status: pending_implementation
+    materialized_status: pending_materialization
     redistribution_policy: >
       Do not commit the materialized AgeDB manifest because it contains dataset
       annotations covered by AgeDB's no-redistribution terms. Commit only the
