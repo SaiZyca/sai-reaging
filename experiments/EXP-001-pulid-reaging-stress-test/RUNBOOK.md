@@ -119,10 +119,10 @@ After extraction, set a local PowerShell variable to the directory that
 contains the AgeDB image files:
 
 ```powershell
-$AgeDBRoot = "<PATH_TO_EXTRACTED_AGEDB>"
+$AgeDBRoot = (Resolve-Path .\_Datasets\AgeDB).Path
 ```
 
-Do not use a third-party redistributed copy for canonical EXP-001 execution.
+Canonical EXP-001 local layout is `_Datasets\AgeDB`. Do not use a third-party redistributed copy for canonical EXP-001 execution.
 
 ## 5. Dataset Gate — deterministic private selection
 

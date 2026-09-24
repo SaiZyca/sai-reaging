@@ -36,3 +36,7 @@ experiments/**/outputs/
 
 # Local raw environment capture; commit only sanitized snapshot + locks
 experiments/EXP-001-pulid-reaging-stress-test/environment/observed/
+
+# Local research datasets: keep raw/licensed data outside Git
+_Datasets/*
+!_Datasets/README.md
