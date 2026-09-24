@@ -426,6 +426,7 @@ inputs:
       Same-identity metadata and manually collected year-level age labels make
       AgeDB suitable for controlled age-editability stress testing.
     raw_data_in_repo: false
+    canonical_local_path: "_Datasets/AgeDB"
     access_terms_verified:
       value: true
       verified_at: "2026-09-24"
